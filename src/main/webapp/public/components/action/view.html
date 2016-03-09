@@ -1,0 +1,84 @@
+<h2>Actions</h2>
+
+<div class="navbar navbar-default container-fluid">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <form class="navbar-form" role="search" ng-submit="refresh()">
+                <div class="form-group">
+                    <label for="filter" class="sr-only">Filter</label>
+                    <div class="input-group">
+                        <input type="text" id="filter" size="40" placeholder="Filter"
+                               class="form-control has-extension" ng-model="filter" />
+                        <div class="input-group-btn">
+                            <input type="button" class="btn btn-default fa-codepoint control-extension" value="&#xf00d"
+                                   tabindex="-1" ng-click="filter=''; refresh();"/>
+                            <input type="submit" class="btn btn-primary fa-codepoint" value="Find &#xf002;"/>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <div class="nav navbar-nav navbar-right" style="margin-right: 14px">
+                <span class="btn-group">
+                    <button class="navbar-btn btn btn-danger" ng-click="deleteAll()">
+                        <i class="fa fa-trash"></i> Clear all
+                    </button>
+                    <button ng-hide="state.active" class="navbar-btn btn btn-info" ng-click="refresh()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                    <button ng-show="state.active" class="navbar-btn btn btn-default" ng-click="refresh({stream: false})">
+                        <i class="fa fa-refresh fa-spin"></i> Streaming...
+                    </button>
+                    <button ng-show="!state.active &amp;&amp; canStream" class="navbar-btn btn btn-default" ng-click="refresh({stream: true})">
+                        <i class="fa fa-refresh"></i> Stream
+                    </button>
+                    <a ui-sref-active="active" ui-sref="actions({show:false})" class="navbar-btn btn btn-warning">
+                        <i class="fa fa-caret-up"></i> Hide data
+                    </a>
+                    <a ui-sref-active="active" ui-sref="actions({show:true})" class="navbar-btn btn btn-warning">
+                        <i class="fa fa-caret-down"></i> Show data
+                    </a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default" ng-class="{'panel-danger': entry.exception, 'panel-warning': !entry.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
+    <div class="panel-heading">
+        <span class="panel-title">
+            {{ entry.startDateTime|date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMilli }} ms)
+            <code>
+                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.host})">{{ entry.host }}</a>
+            </code>
+            <code>
+                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.service})">{{ entry.service }}</a>
+            </code>
+            <span class="btn-group pull-right toolbar">
+                <a ui-sref="actions({filter:entry.requestId, show:true, stream:false})" class="btn btn-xs btn-info" title="Show only this entry" target="_blank">
+                    <i class="fa fa-external-link"></i>
+                </a>
+                <button class="btn btn-warning btn-xs" ng-click="toggle(entry)" title="Expand this entry">
+                    <i ng-class="{'fa-caret-down': entry.expanded, 'fa-caret-up': !entry.expanded}" class="fa"></i>
+                </button>
+            </span>
+        </span>
+    </div>
+    <div class="panel-body" ng-class="{collapse: !entry.expanded}"  style="overflow: auto">
+        <div ng-hide="entry.exception" class="row">
+            <div class="col-md-6 col-xs-12">
+                <pre line-diff left-obj="entry.requestDataIn" right-obj="entry.requestDataOut"></pre>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                <pre line-diff left-obj="entry.responseDataIn" right-obj="entry.responseDataOut"></pre>
+            </div>
+        </div>
+
+        <div ng-show="entry.exception" class="row">
+            <div class="col-xs-12">
+                <exception value="entry.exception"></exception>
+            </div>
+        </div>
+    </div>
+</div>

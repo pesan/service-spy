@@ -1,0 +1,81 @@
+
+h1 {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.disabled {
+    opacity: .6;
+}
+
+.has-extension {
+    box-shadow: inset -1px 0 0 0 #fff, inset 0 1px 1px 0 rgba(0, 0, 0, 0.075) !important;
+    border-right: none;
+}
+.has-extension:focus {
+    box-shadow: inset -1px 0 0 0 #fff, inset 0 1px 1px 0 rgba(0, 0, 0, 0.075) !important;
+    border-top: 1px solid #CCC !important;
+    border-left: 1px solid #CCC !important;
+    border-bottom: 1px solid #CCC !important;
+}
+.control-extension {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset !important;
+    border-left: none;
+    color: gray;
+}
+
+.fa-codepoint {
+    font-family: FontAwesome, serif;
+}
+
+.toasts {
+    width: 400px;
+    position: fixed;
+    right: 16px;
+    top: 16px;
+    z-index: 99999999;
+}
+
+.toast {
+    box-shadow: 4px 4px 13px 0 rgba(0,0,0,0.5);
+}
+
+.panel {
+    transition: .6s linear border-color;
+}
+.panel > .panel-heading {
+    transition: .6s linear background-color;
+}
+.panel > .panel-heading + .panel-collapse > .panel-body {
+    transition: .6s linear border-top-color;
+}
+
+.toolbar button, .toolbar a {
+    min-width: 26px;
+}
+
+
+/** DIFF PATCH **/
+.match, .textdiff span {
+    color: slategrey;
+}
+.ins, ins {
+    color: black;
+    background-color: #bbffbb;
+}
+.del, del {
+    color: black;
+    background-color: #ffbbbb;
+}
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
