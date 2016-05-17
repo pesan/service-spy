@@ -7,6 +7,7 @@ import org.github.pesan.tools.servicespy.proxy.transform.StreamTransformer;
 import org.github.pesan.tools.servicespy.proxy.transform.matching.MatchableDocumentTransformer;
 import org.github.pesan.tools.servicespy.proxy.transform.matching.misc.StringTransformerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,6 @@ import java.util.concurrent.Callable;
 
 import static java.util.stream.Collectors.toList;
 import static org.github.pesan.tools.servicespy.proxy.transform.matching.MatchingTransformer.matches;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class RequestController {
@@ -62,16 +62,17 @@ public class RequestController {
         );
     }
 
-    @RequestMapping(value = "/**", method = POST)
+    @RequestMapping(value = "/**")
     public Callable<Void> handle(HttpServletRequest request, HttpServletResponse response) throws IOException, XMLStreamException, TransformerConfigurationException {
         String requestPath = (String)request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String requestPathWithQuery = requestPath + (StringUtils.isEmpty(request.getQueryString()) ? "" : "?" + request.getQueryString());
         String backendUrl = proxyConfig.getMappings().stream()
                 .filter(ProxyConfig.Mapping::isActive)
                 .filter(m -> m.getPattern().matcher(requestPath).matches())
-                .map(x -> x.getUrl() + requestPath)
+                .map(x -> x.getUrl() + requestPathWithQuery)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("no mapping for " + requestPath));
-        RequestLogEntry logEntry = actionService.beginRequest(UUID.randomUUID().toString(), requestPath, new URL(backendUrl));
+        RequestLogEntry logEntry = actionService.beginRequest(UUID.randomUUID().toString(), requestPath, requestPathWithQuery, request.getMethod(), new URL(backendUrl));
         request.setAttribute("requestLog", logEntry);
         return () -> {
             ByteArrayOutputStream requestInStream = new ByteArrayOutputStream();
@@ -86,6 +87,7 @@ public class RequestController {
             ProxyResponse proxyResponse = proxy.doProxy(requestPath, requestTransformer, responseTransformer, new ProxyRequest(
                     request.getInputStream(),
                     response.getOutputStream(),
+                    request.getMethod(),
                     request.getContentLength(),
                     request.getContentType(),
                     request.getRequestURI(),
@@ -96,7 +98,7 @@ public class RequestController {
             response.setContentLength((int) proxyResponse.getContentLength());
             response.setContentType(proxyResponse.getContentType());
 
-            actionService.endRequest(logEntry, requestInStream.toString(), requestOutStream.toString(),
+            actionService.endRequest(logEntry, proxyResponse.getStatus(), proxyResponse.getContentType(), requestInStream.toString(), requestOutStream.toString(),
                     responseInStream.toString(), responseOutStream.toString());
             return null;
         };

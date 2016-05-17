@@ -50,10 +50,13 @@
         <span class="panel-title">
             {{ entry.startDateTime|date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMilli }} ms)
             <code>
-                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.host})">{{ entry.host }}</a>
+                <span class="label" ng-class="{'label-success': entry.status/100===2, 'label-warning': entry.status/100===3, 'label-danger': entry.status/100!==2&&entry.status/100!==3}">{{ entry.status }}</span>
             </code>
             <code>
-                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.service})">{{ entry.service }}</a>
+                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.host})">{{ entry.host }}</a>
+            </code>
+            <code title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}">
+                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.requestPath})">{{ entry.httpMethod }} {{ entry.requestPath }}</a>
             </code>
             <span class="btn-group pull-right toolbar">
                 <a ui-sref="actions({filter:entry.requestId, show:true, stream:false})" class="btn btn-xs btn-info" title="Show only this entry" target="_blank">
@@ -68,10 +71,10 @@
     <div class="panel-body" ng-class="{collapse: !entry.expanded}"  style="overflow: auto">
         <div ng-hide="entry.exception" class="row">
             <div class="col-md-6 col-xs-12">
-                <pre line-diff left-obj="entry.requestDataIn" right-obj="entry.requestDataOut"></pre>
+                <pre ng-if="entry.requestDataIn || entry.requestDataOut" line-diff left-obj="entry.requestDataIn" right-obj="entry.requestDataOut"></pre>
             </div>
             <div class="col-md-6 col-xs-12">
-                <pre line-diff left-obj="entry.responseDataIn" right-obj="entry.responseDataOut"></pre>
+                <pre ng-if="entry.responseDataIn || entry.responseDataOut" line-diff left-obj="entry.responseDataIn" right-obj="entry.responseDataOut"></pre>
             </div>
         </div>
 

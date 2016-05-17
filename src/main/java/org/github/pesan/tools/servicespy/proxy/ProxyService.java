@@ -40,7 +40,8 @@ public class ProxyService {
     private CloseableHttpResponse doBackendRequest(CloseableHttpClient client, ProxyRequest proxyRequest, Map<String, Object> context, StreamTransformer requestTransformer) throws IOException {
         return client.execute(
             RequestBuilder
-                    .post(proxyRequest.getBackendUrl())
+                    .create(proxyRequest.getHttpMethod())
+                    .setUri(proxyRequest.getBackendUrl())
                     .setEntity(getEntityStream(proxyRequest, context, requestTransformer))
                     .build()
         );

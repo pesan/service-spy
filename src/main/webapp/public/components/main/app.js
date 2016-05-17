@@ -38,7 +38,7 @@ angular.module('tools.servicespy', [
                 stream: function($stateParams, canStream) {
                     return canStream && $stateParams.stream === 'true';
                 },
-                entryState: function(ActionService, show, $timeout, $filter, xmlFormatter, stream, Toast) {
+                entryState: function(ActionService, show, $timeout, $filter, textFormatter, stream, Toast) {
                     var state = {
                         active: stream,
                         entries: []
@@ -54,11 +54,12 @@ angular.module('tools.servicespy', [
                         $timeout(tryListen, 6000);
                     };
                     var handleEntry = function(entry) {
+                            var formatter = textFormatter(entry.contentType);
                             entry.expanded = show;
-                            entry.requestDataIn = xmlFormatter(entry.requestDataIn);
-                            entry.requestDataOut = xmlFormatter(entry.requestDataOut);
-                            entry.responseDataIn = xmlFormatter(entry.responseDataIn);
-                            entry.responseDataOut = xmlFormatter(entry.responseDataOut);
+                            entry.requestDataIn = formatter(entry.requestDataIn);
+                            entry.requestDataOut = formatter(entry.requestDataOut);
+                            entry.responseDataIn = formatter(entry.responseDataIn);
+                            entry.responseDataOut = formatter(entry.responseDataOut);
                             entry.isNew = stream;
                             state.entries.unshift(entry);
                             $timeout(function() { delete entry.isNew; }, 3000);
@@ -117,6 +118,13 @@ config(function($httpProvider) {
         }, 5000);
     };
 })
-.factory('xmlFormatter', function($filter) {
-    return $filter('xml');
+.factory('textFormatter', function($filter) {
+    var formatters = {
+        'application/xml': $filter('xml'),
+        'application/json': $filter('json')
+    };
+    return function(contentType) {
+        return formatters[contentType] || _.identity;
+    };
+    
 });

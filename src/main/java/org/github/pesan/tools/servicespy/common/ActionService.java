@@ -25,12 +25,12 @@ public class ActionService {
         buffer = new SerializedSubject<>(replay);
     }
 
-    public RequestLogEntry beginRequest(String requestId, String service, URL url) {
-        return new RequestLogEntry(requestId, service, url);
+    public RequestLogEntry beginRequest(String requestId, String requestPath, String requestPathWithQuery, String httpMethod, URL url) {
+        return new RequestLogEntry(requestId, requestPath, requestPathWithQuery, httpMethod, url);
     }
 
-    public void endRequest(RequestLogEntry entry, String requestDataIn, String requestDataOut, String responseDataIn, String responseDataOut) {
-        buffer.onNext(entry.endRequest(requestDataIn, requestDataOut, responseDataIn, responseDataOut));
+    public void endRequest(RequestLogEntry entry, int status, String contentType, String requestDataIn, String requestDataOut, String responseDataIn, String responseDataOut) {
+        buffer.onNext(entry.endRequest(status, contentType, requestDataIn, requestDataOut, responseDataIn, responseDataOut));
     }
 
     public void endRequest(RequestLogEntry entry, Exception e) {
