@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.admin;
+package org.github.pesan.tools.servicespy.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

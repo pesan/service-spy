@@ -1,6 +1,6 @@
-package org.github.pesan.tools.servicespy.admin;
+package org.github.pesan.tools.servicespy.config;
 
-import org.github.pesan.tools.servicespy.common.ProxyConfig;
+import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,23 +13,19 @@ import rx.Observable;
 @RequestMapping("/api/config")
 public class ConfigController {
 
-    private @Autowired ProxyConfig config;
+    private @Autowired ProxyProperties config;
 
     @RequestMapping(method=RequestMethod.GET)
-    public Observable<ProxyConfig> get() {
+    public Observable<ProxyProperties> get() {
         return Observable.just(config);
     }
 
     @RequestMapping(method=RequestMethod.PUT)
-    public Observable<HttpStatus> put(@RequestBody ProxyConfig newConfig) {
+    public Observable<HttpStatus> put(@RequestBody ProxyProperties newConfig) {
         return Observable.just(newConfig)
                 .doOnNext(x -> {
                     config.getMappings().clear();
                     config.getMappings().addAll(newConfig.getMappings());
-                    config.getRequestTransforms().clear();
-                    config.getRequestTransforms().addAll(newConfig.getRequestTransforms());
-                    config.getResponseTransforms().clear();
-                    config.getResponseTransforms().addAll(newConfig.getResponseTransforms());
                 })
                 .map(x -> HttpStatus.NO_CONTENT);
     }

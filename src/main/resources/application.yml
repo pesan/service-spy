@@ -1,9 +1,9 @@
 ---
-admin:
-  server.port: "9900"
+server:
+  port: "9900"
 
 proxy:
-  server.port: "9000"
-  config.mappings:
+  port: "9000"
+  mappings:
    - pattern: /.*
      url: http://localhost:8080

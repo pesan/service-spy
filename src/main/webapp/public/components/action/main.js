@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('tools.servicespy.action', ['api', 'diff-match-patch'])
+angular.module('tools.servicespy.action', ['api'])
 .controller('ActionController', function($scope, $state, ActionService, entryState, filter, canStream) {
     $scope.state = entryState;
     $scope.requestLogs = entryState.entries;

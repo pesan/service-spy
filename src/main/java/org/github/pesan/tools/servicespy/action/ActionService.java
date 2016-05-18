@@ -1,6 +1,5 @@
-package org.github.pesan.tools.servicespy.common;
+package org.github.pesan.tools.servicespy.action;
 
-import org.github.pesan.tools.servicespy.admin.RequestLogEntry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rx.Observable;
@@ -25,16 +24,20 @@ public class ActionService {
         buffer = new SerializedSubject<>(replay);
     }
 
-    public RequestLogEntry beginRequest(String requestId, String requestPath, String requestPathWithQuery, String httpMethod, URL url) {
-        return new RequestLogEntry(requestId, requestPath, requestPathWithQuery, httpMethod, url);
+    public RequestLogEntry beginRequest(String requestId, String requestPath, String requestPathWithQuery, String httpMethod) {
+        return new RequestLogEntry(requestId, requestPath, requestPathWithQuery, httpMethod);
     }
 
-    public void endRequest(RequestLogEntry entry, int status, String contentType, String requestDataIn, String requestDataOut, String responseDataIn, String responseDataOut) {
-        buffer.onNext(entry.endRequest(status, contentType, requestDataIn, requestDataOut, responseDataIn, responseDataOut));
+    public void endRequest(RequestLogEntry entry, int status, String contentType, URL url, String requestData, String responseData) {
+        buffer.onNext(entry.endRequest(status, contentType, url, requestData, responseData));
     }
 
-    public void endRequest(RequestLogEntry entry, Exception e) {
-        buffer.onNext(entry.endRequest(e));
+    public void endRequest(RequestLogEntry entry, Throwable throwable) {
+        buffer.onNext(entry.endRequest(throwable));
+    }
+
+    public void endRequest(RequestLogEntry entry, URL url, Throwable throwable) {
+        buffer.onNext(entry.endRequest(throwable, url));
     }
 
     public Observable<RequestLogEntry> list() {

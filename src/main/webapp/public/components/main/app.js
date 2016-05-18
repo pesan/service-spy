@@ -56,10 +56,8 @@ angular.module('tools.servicespy', [
                     var handleEntry = function(entry) {
                             var formatter = textFormatter(entry.contentType);
                             entry.expanded = show;
-                            entry.requestDataIn = formatter(entry.requestDataIn);
-                            entry.requestDataOut = formatter(entry.requestDataOut);
-                            entry.responseDataIn = formatter(entry.responseDataIn);
-                            entry.responseDataOut = formatter(entry.responseDataOut);
+                            entry.requestData = formatter(entry.requestData);
+                            entry.responseData = formatter(entry.responseData);
                             entry.isNew = stream;
                             state.entries.unshift(entry);
                             $timeout(function() { delete entry.isNew; }, 3000);
@@ -121,10 +119,9 @@ config(function($httpProvider) {
 .factory('textFormatter', function($filter) {
     var formatters = {
         'application/xml': $filter('xml'),
-        'application/json': $filter('json')
+        'application/json': function(text) { return _.isEmpty(text) ? "" : angular.toJson(angular.fromJson(text), 2); }
     };
     return function(contentType) {
-        return formatters[contentType] || _.identity;
+        return formatters[(contentType || '').replace(/;.*/, '')] || _.identity;
     };
-    
 });

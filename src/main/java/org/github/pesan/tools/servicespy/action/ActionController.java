@@ -1,6 +1,5 @@
-package org.github.pesan.tools.servicespy.admin;
+package org.github.pesan.tools.servicespy.action;
 
-import org.github.pesan.tools.servicespy.common.ActionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

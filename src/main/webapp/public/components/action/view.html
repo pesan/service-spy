@@ -71,10 +71,10 @@
     <div class="panel-body" ng-class="{collapse: !entry.expanded}"  style="overflow: auto">
         <div ng-hide="entry.exception" class="row">
             <div class="col-md-6 col-xs-12">
-                <pre ng-if="entry.requestDataIn || entry.requestDataOut" line-diff left-obj="entry.requestDataIn" right-obj="entry.requestDataOut"></pre>
+                <pre ng-if="entry.requestData">{{ entry.requestData }}</pre>
             </div>
             <div class="col-md-6 col-xs-12">
-                <pre ng-if="entry.responseDataIn || entry.responseDataOut" line-diff left-obj="entry.responseDataIn" right-obj="entry.responseDataOut"></pre>
+                <pre ng-if="entry.responseData">{{ entry.responseData }}</pre>
             </div>
         </div>
 

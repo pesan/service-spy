@@ -149,22 +149,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5</version>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+			<version>3.2.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.io7m.xom</groupId>
-			<artifactId>xom</artifactId>
-			<version>1.2.10</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		
+
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
