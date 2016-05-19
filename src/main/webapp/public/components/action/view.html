@@ -1,79 +1,69 @@
-<h2>Actions</h2>
+<h2>Actions
+    <div class="btn-group pull-xs-right" role="group">
+        <button class="btn btn-danger btn-sm" ng-click="deleteAll()">
+            <i class="fa fa-trash"></i> Clear all
+        </button>
+        <button ng-hide="state.active" class="btn btn-info btn-sm" ng-click="refresh()">
+            <i class="fa fa-refresh"></i> Refresh
+        </button>
+        <button ng-show="state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: false})">
+            <i class="fa fa-refresh fa-spin"></i> Streaming...
+        </button>
+        <button ng-hide="state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: true})">
+            <i class="fa fa-refresh"></i> Stream
+        </button>
+        <a ui-sref-active="active" ui-sref="actions({show: false})" class="btn btn-warning btn-warning btn-sm">
+            <i class="fa fa-caret-up"></i> Hide data
+        </a>
+        <a ui-sref-active="active" ui-sref="actions({show: true})" class="btn btn-warning btn-sm">
+            <i class="fa fa-caret-down"></i> Show data
+        </a>
+    </div>
+</h2>
 
-<div class="navbar navbar-default container-fluid">
-    <div class="row">
-        <div class="col-xs-12 col-md-6">
-            <form class="navbar-form" role="search" ng-submit="refresh()">
-                <div class="form-group">
-                    <label for="filter" class="sr-only">Filter</label>
-                    <div class="input-group">
-                        <input type="text" id="filter" size="40" placeholder="Filter"
-                               class="form-control has-extension" ng-model="filter" />
-                        <div class="input-group-btn">
-                            <input type="button" class="btn btn-default fa-codepoint control-extension" value="&#xf00d"
-                                   tabindex="-1" ng-click="filter=''; refresh();"/>
-                            <input type="submit" class="btn btn-primary fa-codepoint" value="Find &#xf002;"/>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="col-xs-12 col-md-6">
-            <div class="nav navbar-nav navbar-right" style="margin-right: 14px">
-                <span class="btn-group">
-                    <button class="navbar-btn btn btn-danger" ng-click="deleteAll()">
-                        <i class="fa fa-trash"></i> Clear all
-                    </button>
-                    <button ng-hide="state.active" class="navbar-btn btn btn-info" ng-click="refresh()">
-                        <i class="fa fa-refresh"></i> Refresh
-                    </button>
-                    <button ng-show="state.active" class="navbar-btn btn btn-default" ng-click="refresh({stream: false})">
-                        <i class="fa fa-refresh fa-spin"></i> Streaming...
-                    </button>
-                    <button ng-show="!state.active &amp;&amp; canStream" class="navbar-btn btn btn-default" ng-click="refresh({stream: true})">
-                        <i class="fa fa-refresh"></i> Stream
-                    </button>
-                    <a ui-sref-active="active" ui-sref="actions({show:false})" class="navbar-btn btn btn-warning">
-                        <i class="fa fa-caret-up"></i> Hide data
-                    </a>
-                    <a ui-sref-active="active" ui-sref="actions({show:true})" class="navbar-btn btn btn-warning">
-                        <i class="fa fa-caret-down"></i> Show data
-                    </a>
-                </span>
+<form class="form-inline search" ng-submit="refresh()">
+    <fieldset class="form-group">
+        <label for="filter" class="sr-only">Filter</label>
+        <div class="input-group">
+            <input type="text" id="filter" size="40" placeholder="Filter"
+                   class="form-control has-extension" ng-model="filter" />
+            <div class="input-group-btn">
+                <input type="button" class="btn btn-secondary fa-codepoint control-extension" value="&#xf00d"
+                       tabindex="-1" ng-click="filter=''; refresh();"/>
+                <input type="submit" class="btn btn-primary fa-codepoint" value="Find &#xf002;"/>
             </div>
         </div>
-    </div>
-</div>
+    </fieldset>
+</form>
 
-<div class="panel panel-default" ng-class="{'panel-danger': entry.exception, 'panel-warning': !entry.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
-    <div class="panel-heading">
-        <span class="panel-title">
+<div class="card" ng-class="{'card-danger-outline': entry.exception, 'card-warning-outline': !entry.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
+    <div class="card-header">
+        <span class="card-title">
             {{ entry.startDateTime|date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMilli }} ms)
-            <code>
-                <span class="label" ng-class="{'label-success': entry.status/100===2, 'label-warning': entry.status/100===3, 'label-danger': entry.status/100!==2&&entry.status/100!==3}">{{ entry.status }}</span>
-            </code>
-            <code>
-                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.host})">{{ entry.host }}</a>
-            </code>
-            <code title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}">
-                <a class="label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.requestPath})">{{ entry.httpMethod }} {{ entry.requestPath }}</a>
-            </code>
-            <span class="btn-group pull-right toolbar">
-                <a ui-sref="actions({filter:entry.requestId, show:true, stream:false})" class="btn btn-xs btn-info" title="Show only this entry" target="_blank">
-                    <i class="fa fa-external-link"></i>
-                </a>
-                <button class="btn btn-warning btn-xs" ng-click="toggle(entry)" title="Expand this entry">
-                    <i ng-class="{'fa-caret-down': entry.expanded, 'fa-caret-up': !entry.expanded}" class="fa"></i>
-                </button>
-            </span>
+        </span>
+
+        <span class="monospace label" ng-class="{'label-success': entry.status/100===2, 'label-warning': entry.status/100===3, 'label-danger': entry.status/100!==2&&entry.status/100!==3}">
+            {{ entry.status }}
+        </span>
+        <a class="monospace label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.host})">{{ entry.host }}</a>
+        <a title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}" class="monospace label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.requestPath})">
+            {{ entry.httpMethod }} {{ entry.requestPath }}
+        </a>
+        <span class="btn-group btn-group-sm pull-xs-right">
+            <a ui-sref="actions({filter:entry.requestId, show:true, stream:false})" class="btn btn-info" title="Show only this entry" target="_blank">
+                <i class="fa fa-external-link"></i>
+            </a>
+            <button class="btn btn-warning" ng-click="toggle(entry)" title="Expand this entry">
+                <i ng-class="{'fa-caret-down': entry.expanded, 'fa-caret-up': !entry.expanded}" class="fa"></i>
+            </button>
         </span>
     </div>
-    <div class="panel-body" ng-class="{collapse: !entry.expanded}"  style="overflow: auto">
+    <div class="card-block" ng-class="{collapse: !entry.expanded}">
         <div ng-hide="entry.exception" class="row">
-            <div class="col-md-6 col-xs-12">
+            <div class="card card-block col-md-6 col-xs-12">
                 <pre ng-if="entry.requestData">{{ entry.requestData }}</pre>
             </div>
-            <div class="col-md-6 col-xs-12">
+            <div class="card card-block col-md-6 col-xs-12">
                 <pre ng-if="entry.responseData">{{ entry.responseData }}</pre>
             </div>
         </div>

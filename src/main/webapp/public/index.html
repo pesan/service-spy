@@ -2,6 +2,8 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title>SERVICE SPY</title>
         <base href="/"/>
 
@@ -9,7 +11,10 @@
 
         <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/@bootstrap.version@/css/bootstrap.min.css" />
         <link rel="stylesheet" type="text/css" href="/webjars/font-awesome/@font-awesome.version@/css/font-awesome.min.css" />
+        <link rel="stylesheet" type="text/css" href="/components/external/tether.min.css" />
         <link rel="stylesheet" type="text/css" href="/components/main/style.css" />
+
+        <script type="application/javascript" src="/components/external/tether.min.js"></script>
 
         <script type="text/javascript" src="/webjars/lodash/@lodash.version@/lodash.min.js"></script>
         <script type="text/javascript" src="/webjars/jquery/@jquery.version@/jquery.min.js"></script>
@@ -33,10 +38,10 @@
         <div class="container">
             <header>
                 <ul class="pull-right nav nav-pills">
-                    <li role="presentation" ui-sref-active="active"><a ui-sref="actions">Actions</a></li>
-                    <li role="presentation" ui-sref-active="active"><a ui-sref="config">Config</a></li>
+                    <li class="nav-item" role="presentation"><a class="nav-link" ui-sref-active="active" ui-sref="actions">Actions</a></li>
+                    <li class="nav-item" role="presentation"><a class="nav-link" ui-sref-active="active" ui-sref="config">Config</a></li>
                 </ul>
-                <h1>SERVICE SPY <span class="small">v@project.version@</span></h1>
+                <h1>SERVICE SPY <small class="text-muted">v@project.version@</small></h1>
             </header>
             <div ui-view></div>
             <hr />

@@ -2,10 +2,20 @@
 h1 {
     border-bottom: 1px solid #ddd;
     padding-bottom: 10px;
+    margin-top: 2rem;
+}
+
+h2 {
+    margin: 1.5rem 0 1rem 0;
+}
+
+.search {
+    margin-bottom: 1rem;
 }
 
 .monospace {
     font-family: monospace;
+    font-weight: normal;
 }
 
 .disabled {
@@ -44,38 +54,12 @@ h1 {
     box-shadow: 4px 4px 13px 0 rgba(0,0,0,0.5);
 }
 
-.panel {
+.card {
     transition: .6s linear border-color;
 }
-.panel > .panel-heading {
+.card > .card-header {
     transition: .6s linear background-color;
 }
-.panel > .panel-heading + .panel-collapse > .panel-body {
+.card > .card-header + .card-collapse > .card-block {
     transition: .6s linear border-top-color;
-}
-
-.toolbar button, .toolbar a {
-    min-width: 26px;
-}
-
-
-/** DIFF PATCH **/
-.match, .textdiff span {
-    color: slategrey;
-}
-.ins, ins {
-    color: black;
-    background-color: #bbffbb;
-}
-.del, del {
-    color: black;
-    background-color: #ffbbbb;
-}
-.noselect {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 }
