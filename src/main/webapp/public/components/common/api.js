@@ -17,7 +17,7 @@ angular.module('api', [])
         delete: function(uri, config) {
             return $http.delete(uri, config).then(unwrapData);
         },
-        stream: function(uri) {
+        stream: function(uri, onClose) {
             if (sourceByUri[uri]) {
                 sourceByUri[uri].source.close();
                 sourceByUri[uri].deferred.resolve();
@@ -27,8 +27,8 @@ angular.module('api', [])
             source.onmessage = function(event) {
                 deferred.notify(JSON.parse(event.data));
             };
-            source.onerror = function(error) {
-                deferred.reject(error);
+            source.onerror = function(event) {
+                onClose && onClose(event);
             };
             sourceByUri[uri] = {source: source, deferred: deferred};
             return deferred.promise;

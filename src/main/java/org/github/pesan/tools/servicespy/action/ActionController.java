@@ -2,7 +2,6 @@ package org.github.pesan.tools.servicespy.action;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,14 +11,12 @@ import rx.Observable;
 import java.io.IOException;
 import java.util.List;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/api/actions")
 public class ActionController {
-    private @Autowired
-    ActionService actionService;
+    private @Autowired ActionService actionService;
     private @Value("${stream.timeout:86400000}") long timeout;
 
     @RequestMapping(method=GET)
@@ -43,12 +40,6 @@ public class ActionController {
                         sseEmitter::complete
                 );
         return sseEmitter;
-    }
-
-    @RequestMapping(method=DELETE)
-    public Observable<HttpStatus> delete() {
-        return actionService.deleteAll()
-                .map(x -> HttpStatus.NO_CONTENT);
     }
 }
 

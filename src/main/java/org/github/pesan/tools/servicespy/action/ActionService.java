@@ -47,10 +47,4 @@ public class ActionService {
     public Observable<RequestLogEntry> streamList() {
         return replay;
     }
-
-    public Observable<Boolean> deleteAll() {
-        return Observable
-                .just(true)
-                .doOnNext(x -> init());
-    }
 }

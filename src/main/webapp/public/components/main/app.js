@@ -48,28 +48,20 @@ angular.module('tools.servicespy', [
                             state.entries.pop();
                         }
                     };
-                    var handleReconnect = function(tryListen) {
-                        Toast('warning', 'Retrying connection to server...');
-                        clearEntries();
-                        $timeout(tryListen, 6000);
-                    };
                     var handleEntry = function(entry) {
-                            var formatter = textFormatter(entry.contentType);
-                            entry.expanded = show;
-                            entry.requestData = formatter(entry.requestData);
-                            entry.responseData = formatter(entry.responseData);
-                            entry.isNew = stream;
-                            state.entries.unshift(entry);
-                            $timeout(function() { delete entry.isNew; }, 3000);
+                        var formatter = textFormatter(entry.contentType);
+                        entry.expanded = show;
+                        entry.requestData = formatter(entry.requestData);
+                        entry.responseData = formatter(entry.responseData);
+                        entry.isNew = stream;
+                        state.entries.unshift(entry);
+                        $timeout(function() { delete entry.isNew; }, 3000);
                     };
                     if (stream) {
-                        var tryListen = function() {
-                            ActionService.listen().then(function onClose() {
-                            }, function onError() {
-                                handleReconnect(tryListen);
-                            }, handleEntry);
-                        };
-                        tryListen();
+                        ActionService.listen(function() {
+                            Toast('warning', 'Connection with server lost. Retrying...');
+                            clearEntries();
+                        }).then(function(){}, function(){}, handleEntry);
                     } else {
                         ActionService.fetch().then(function(entries) {
                             _.forEach(entries, handleEntry);

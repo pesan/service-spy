@@ -1,24 +1,28 @@
 <h2>Actions
-    <div class="btn-group pull-xs-right" role="group">
-        <button class="btn btn-danger btn-sm" ng-click="deleteAll()">
-            <i class="fa fa-trash"></i> Clear all
-        </button>
-        <button ng-hide="state.active" class="btn btn-info btn-sm" ng-click="refresh()">
-            <i class="fa fa-refresh"></i> Refresh
-        </button>
-        <button ng-show="state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: false})">
-            <i class="fa fa-refresh fa-spin"></i> Streaming...
-        </button>
-        <button ng-hide="state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: true})">
-            <i class="fa fa-refresh"></i> Stream
-        </button>
-        <a ui-sref-active="active" ui-sref="actions({show: false})" class="btn btn-warning btn-warning btn-sm">
-            <i class="fa fa-caret-up"></i> Hide data
-        </a>
-        <a ui-sref-active="active" ui-sref="actions({show: true})" class="btn btn-warning btn-sm">
-            <i class="fa fa-caret-down"></i> Show data
-        </a>
-    </div>
+    <span class="pull-xs-right">
+        <span class="btn-group" role="group">
+            <button ng-if="!state.active" class="btn btn-info btn-sm" ng-click="refresh()" title="Reload entries from server">
+                <i class="fa fa-refresh"></i> Refresh
+            </button>
+            <button ng-if="canStream &amp;&amp; state.active" class="btn btn-danger btn-sm" ng-click="deleteAll()" title="Clear client entries">
+                <i class="fa fa-trash"></i> Clear all
+            </button>
+            <button ng-if="state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: false})" title="Streaming is active. Click to disable.">
+                <i class="fa fa-refresh fa-spin"></i> Streaming...
+            </button>
+            <button ng-if="canStream &amp;&amp; !state.active" class="btn btn-secondary btn-sm" ng-click="refresh({stream: true})" title="Streaming is inactive. Click to enable.">
+                <i class="fa fa-refresh"></i> Stream
+            </button>
+        </span>
+        <span class="btn-group" role="group">
+            <a ui-sref-active="active" ui-sref="actions({show: false})" class="btn btn-warning btn-warning btn-sm" title="Collapse all entries">
+                <i class="fa fa-caret-up"></i> Hide data
+            </a>
+            <a ui-sref-active="active" ui-sref="actions({show: true})" class="btn btn-warning btn-sm" title="Expand all entries">
+                <i class="fa fa-caret-down"></i> Show data
+            </a>
+        </span>
+    </span>
 </h2>
 
 <form class="form-inline search" ng-submit="refresh()">

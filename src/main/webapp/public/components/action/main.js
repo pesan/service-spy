@@ -8,9 +8,9 @@ angular.module('tools.servicespy.action', ['api'])
     $scope.canStream = canStream;
 
     $scope.deleteAll = function() {
-        ActionService.clear().then(function() {
-            $scope.requestLogs = [];
-        });
+        while (entryState.entries.length) {
+            entryState.entries.pop();
+        }
     };
 
     $scope.refresh = function(params) {
@@ -30,8 +30,7 @@ angular.module('tools.servicespy.action', ['api'])
 .factory('ActionService', function($api) {
     return {
         fetch: function() { return $api.get('/api/actions'); },
-        listen: function() { return $api.stream('/api/actions/stream'); },
-        clear: function() { return $api.delete('/api/actions'); }
+        listen: function(onClose) { return $api.stream('/api/actions/stream', onClose); }
     };
 })
 .directive('icon', function() {
