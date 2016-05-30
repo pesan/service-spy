@@ -1,15 +1,12 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServer;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
 
 @Configuration
 public class ProxyConfig {
@@ -34,14 +31,6 @@ public class ProxyConfig {
     @Bean
     public HttpServer httpServer(Vertx vertx) {
         return vertx.createHttpServer();
-    }
-
-    private @Autowired Vertx vertx;
-    private @Autowired Verticle proxyService;
-
-    @PostConstruct
-    public void deploy() {
-        vertx.deployVerticle(proxyService);
     }
 
 }

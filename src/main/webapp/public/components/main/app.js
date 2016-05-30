@@ -49,6 +49,9 @@ angular.module('tools.servicespy', [
                         }
                     };
                     var handleEntry = function(entry) {
+                        if (_.some(state.entries, 'requestId', entry.requestId)) {
+                            clearEntries();
+                        }
                         var formatter = textFormatter(entry.contentType);
                         entry.expanded = show;
                         entry.requestData = formatter(entry.requestData);

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('api', [])
-.factory('$api', function($http, $q) {
+.factory('$api', function($rootScope, $http, $q) {
     var sourceByUri = {};
     var unwrapData = function(result) { return result.data; };
     return {
@@ -28,7 +28,9 @@ angular.module('api', [])
                 deferred.notify(JSON.parse(event.data));
             };
             source.onerror = function(event) {
-                onClose && onClose(event);
+                if (onClose) {
+                    $rootScope.$apply(onClose.bind(null, event));
+                }
             };
             sourceByUri[uri] = {source: source, deferred: deferred};
             return deferred.promise;
