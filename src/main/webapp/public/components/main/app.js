@@ -38,7 +38,7 @@ angular.module('tools.servicespy', [
                 stream: function($stateParams, canStream) {
                     return canStream && $stateParams.stream === 'true';
                 },
-                entryState: function(ActionService, show, $timeout, $filter, textFormatter, stream, Toast) {
+                entryState: function(ActionService, show, $timeout, textFormatter, stream, Toast) {
                     var state = {
                         active: stream,
                         entries: []
@@ -49,13 +49,13 @@ angular.module('tools.servicespy', [
                         }
                     };
                     var handleEntry = function(entry) {
-                        if (_.some(state.entries, 'requestId', entry.requestId)) {
+                        if (_.some(state.entries, 'id', entry.id)) {
                             clearEntries();
                         }
-                        var formatter = textFormatter(entry.contentType);
+                        var formatter = textFormatter(entry.response.contentType);
                         entry.expanded = show;
-                        entry.requestData = formatter(entry.requestData);
-                        entry.responseData = formatter(entry.responseData);
+                        entry.requestData = formatter(entry.request.data);
+                        entry.responseData = formatter(entry.response.data);
                         entry.isNew = stream;
                         state.entries.unshift(entry);
                         $timeout(function() { delete entry.isNew; }, 3000);

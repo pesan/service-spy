@@ -9,7 +9,9 @@ import io.vertx.core.http.HttpServerResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.github.pesan.tools.servicespy.action.ActionService;
-import org.github.pesan.tools.servicespy.action.RequestLogEntry;
+import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
+import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.UUID;
+import java.time.Clock;
+import java.time.LocalDateTime;
 
 @Component
 public class ProxyService extends AbstractVerticle {
@@ -30,6 +33,8 @@ public class ProxyService extends AbstractVerticle {
     private @Autowired HttpClient httpClient;
     private @Autowired HttpServer httpServer;
 
+    private @Autowired Clock clock;
+
     @Override
     public void start() {
         httpServer.requestHandler(serverRequest -> {
@@ -38,7 +43,7 @@ public class ProxyService extends AbstractVerticle {
             ByteArrayOutputStream received = new ByteArrayOutputStream();
             ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
-            RequestLogEntry entry = actionService.beginRequest(UUID.randomUUID().toString(), requestPath, requestPathWithQuery, serverRequest.method().name());
+            RequestEntry reqEntry = new RequestEntry(requestPath, requestPathWithQuery, serverRequest.method().name(), sent, getClockTime());
             try {
                 URL backendUrl = createURL(proxyProperties.getMappings().stream()
                         .filter(ProxyProperties.Mapping::isActive)
@@ -56,14 +61,14 @@ public class ProxyService extends AbstractVerticle {
                         write(received, data);
                         serverResponse.write(data);
                     }).exceptionHandler(throwable -> {
-                        actionService.endRequest(entry, backendUrl, throwable);
+                        actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
                         serverResponse.close();
                     }).endHandler(v -> {
-                        actionService.endRequest(entry, clientResponse.statusCode(), clientResponse.getHeader("Content-Type"), backendUrl, sent.toString(), received.toString());
+                        actionService.log(reqEntry, new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader("Content-Type"), backendUrl, received.toString(), getClockTime()));
                         serverResponse.end();
                     });
                 }).exceptionHandler(throwable -> {
-                    actionService.endRequest(entry, backendUrl, throwable);
+                    actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
                     serverRequest.response().close();
                 });
                 clientRequest.setChunked(true);
@@ -77,7 +82,7 @@ public class ProxyService extends AbstractVerticle {
             } catch (RuntimeException e) {
                 logger.warn(e.getMessage(), e);
                 serverRequest.response().close();
-                actionService.endRequest(entry, e);
+                actionService.log(reqEntry, new ResponseExceptionEntry(null, e, getClockTime()));
 
             }
         }).listen(proxyProperties.getPort(), result -> {
@@ -87,6 +92,10 @@ public class ProxyService extends AbstractVerticle {
                 logger.fatal("Unable to start HTTP proxy", result.cause());
             }
         });
+    }
+
+    private LocalDateTime getClockTime() {
+        return LocalDateTime.ofInstant(clock.instant(), clock.getZone());
     }
 
     private void write(OutputStream stream, Buffer buffer) {
