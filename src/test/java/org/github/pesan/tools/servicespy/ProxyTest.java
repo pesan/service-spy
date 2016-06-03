@@ -1,5 +1,19 @@
 package org.github.pesan.tools.servicespy;
 
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.port;
+import static java.util.Collections.singletonMap;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Map;
+
 import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.junit.Before;
@@ -19,19 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Map;
-
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.RestAssured.port;
-import static java.util.Collections.singletonMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebIntegrationTest({"server.port=0", "proxy.port=65100"})
@@ -116,7 +117,7 @@ public class ProxyTest {
             .body("[0].response.port", equalTo(0))
             .body("[0].response.hostName", equalTo("localhost"))
             .body("[0].response.time", equalTo("1970-01-01T01:00:00.074"))
-            .body("[0].response.exception.message", equalTo("Can't assign requested address: localhost/127.0.0.1:0"))
+            .body("[0].response.exception.message", notNullValue())
             .statusCode(200);
     }
 
