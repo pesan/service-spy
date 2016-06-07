@@ -6,24 +6,30 @@ import org.github.pesan.tools.servicespy.action.entry.ResponseEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import rx.Observable;
 import rx.subjects.ReplaySubject;
 import rx.subjects.SerializedSubject;
 import rx.subjects.Subject;
 
-import javax.annotation.PostConstruct;
-
 @Service
 public class ActionService {
-    @Value("${actions.limit:200}")
-    private int maxEntryCount;
 
-    private @Autowired RequestIdGenerator requestIdGenerator;
+    private final RequestIdGenerator requestIdGenerator;
+    private final int maxEntryCount;
 
     private Subject<LogEntry, LogEntry> buffer;
-    private ReplaySubject<LogEntry> replay = ReplaySubject.createWithSize(maxEntryCount);
+    private ReplaySubject<LogEntry> replay;
 
-    @PostConstruct
+    @Autowired
+    public ActionService(
+            RequestIdGenerator requestIdGenerator,
+            @Value("${actions.limit:200}") int maxEntryCount) {
+        this.requestIdGenerator = requestIdGenerator;
+        this.maxEntryCount = maxEntryCount;
+        init();
+    }
+
     public void init() {
         replay = ReplaySubject.createWithSize(maxEntryCount);
         buffer = new SerializedSubject<>(replay);

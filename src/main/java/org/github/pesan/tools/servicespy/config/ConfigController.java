@@ -7,13 +7,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
 import rx.Observable;
 
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
 
-    private @Autowired ProxyProperties config;
+    private final ProxyProperties config;
+
+    @Autowired
+    public ConfigController(ProxyProperties config) {
+		this.config = config;
+    }
 
     @RequestMapping(method=RequestMethod.GET)
     public Observable<ProxyProperties> get() {
