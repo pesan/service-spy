@@ -35,7 +35,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebIntegrationTest({"server.port=0", "proxy.port=65100"})
+@WebIntegrationTest({"server.port=0", "proxy.servers.http.port=65080", "proxy.servers.https.port=65443"})
 @SpringApplicationConfiguration({Application.class, ProxyTest.TestConfiguration.class})
 public class ProxyTest {
 
@@ -69,7 +69,7 @@ public class ProxyTest {
 
     @Test
     public void shouldHaveActionDataWhenThereIsOneAction() throws IOException {
-        rest.postForObject("http://localhost:65100/test/entity?withQuery", singletonMap("id", "10993"), Object.class);
+        rest.postForObject("http://localhost:65080/test/entity?withQuery", singletonMap("id", "10993"), Object.class);
 
         given()
         .when()
@@ -97,7 +97,7 @@ public class ProxyTest {
         proxyProperties.getMappings().get(0).setUrl("http://localhost:" + 0);
 
         try {
-            rest.getForObject("http://localhost:65100/invalid", Object.class);
+            rest.getForObject("http://localhost:65080/invalid", Object.class);
         } catch (ResourceAccessException ignored) {
             // expected
         }

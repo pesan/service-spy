@@ -3,7 +3,12 @@ server:
   port: "9900"
 
 proxy:
-  port: "9000"
+  servers:
+    http:
+      port: "9000"
+    https:
+      ssl: true
+      port: "9443"
   mappings:
    - pattern: /.*
      url: http://localhost:8080

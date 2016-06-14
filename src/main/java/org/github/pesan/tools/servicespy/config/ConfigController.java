@@ -18,7 +18,7 @@ public class ConfigController {
 
     @Autowired
     public ConfigController(ProxyProperties config) {
-		this.config = config;
+        this.config = config;
     }
 
     @RequestMapping(method=RequestMethod.GET)
