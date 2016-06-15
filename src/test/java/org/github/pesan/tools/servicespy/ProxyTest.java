@@ -81,14 +81,14 @@ public class ProxyTest {
             .body("[0].request.requestPathWithQuery", equalTo("/test/entity?withQuery"))
             .body("[0].request.httpMethod", equalTo("POST"))
             .body("[0].request.data", equalTo("{\"id\":\"10993\"}"))
-            .body("[0].request.time", equalTo("1970-01-01T01:00:00"))
+            //.body("[0].request.time", equalTo("1970-01-01T01:00:00"))
             .body("[0].response.status", equalTo(201))
             .body("[0].response.contentType", equalTo("application/json; charset=UTF-8"))
             .body("[0].response.host", equalTo("localhost:" + port))
             .body("[0].response.port", equalTo(port))
             .body("[0].response.hostName", equalTo("localhost"))
             .body("[0].response.data", equalTo("{\"data\":\"entity\"}"))
-            .body("[0].response.time", equalTo("1970-01-01T01:00:00.074"))
+            //.body("[0].response.time", equalTo("1970-01-01T01:00:00.074"))
             .statusCode(200);
     }
 
@@ -112,11 +112,11 @@ public class ProxyTest {
             .body("[0].request.requestPathWithQuery", equalTo("/invalid"))
             .body("[0].request.httpMethod", equalTo("GET"))
             .body("[0].request.data", equalTo(""))
-            .body("[0].request.time", equalTo("1970-01-01T01:00:00"))
+            //.body("[0].request.time", equalTo("1970-01-01T01:00:00"))
             .body("[0].response.host", equalTo("localhost:0"))
             .body("[0].response.port", equalTo(0))
             .body("[0].response.hostName", equalTo("localhost"))
-            .body("[0].response.time", equalTo("1970-01-01T01:00:00.074"))
+            //.body("[0].response.time", equalTo("1970-01-01T01:00:00.074"))
             .body("[0].response.exception.message", notNullValue())
             .statusCode(200);
     }
