@@ -8,54 +8,86 @@
     </div>
 
     <div class="card-block">
-        Pattern mappings in order of evaluation. It will redirect requests
-        for a given service matching <strong>Pattern</strong> to <strong>URL</strong>.
+        <p>
+            Pattern mappings in order of evaluation. It will redirect requests
+            for a given service matching <strong>Pattern</strong> to <strong>URL</strong>.
+        </p>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Active</th>
+                    <th>Pattern <span class="label label-default" title="Regular Expression">RE</span></th>
+                    <th>URL</th>
+                    <th>
+                        <button ng-disabled="!isEditing()" class="btn btn-secondary btn-sm" title="Add mapping" ng-click="add(config.mappings)"><i class="fa fa-plus"></i> Add</button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-show="!config.mappings.length"><td colspan="5" class="text-center text-muted"><i class="fa fa-info-sign"></i> No mappings defined.</td></tr>
+                <tr ng-repeat="entry in config.mappings track by $index">
+                    <td>
+                        <button class="btn btn-sm" ng-class="{'active btn-success': isActive(entry), 'btn-secondary': !isActive(entry)}" ng-click="toggleActive(entry)" title="Toggle active/inactive mapping">
+                            <i class="fa" ng-class="{'fa-check': isActive(entry), 'fa-minus': !isActive(entry)}"></i>
+                        </button>
+                    </td>
+                    <td ng-show="isEditing(entry)">
+                        <input class="monospace" size="30" type="text" ng-model="entry.pattern"/>
+                    </td>
+                    <td ng-show="isEditing(entry)">
+                        <div class="form-inline">
+                            <input class="monospace" size="50" type="text" ng-model="entry.url"/>
+                        </div>
+                    </td>
+                    <td ng-class="{disabled: !isActive(entry)}" ng-hide="isEditing(entry)"><code>{{ entry.pattern }}</code></td>
+                    <td ng-class="{disabled: !isActive(entry)}" ng-hide="isEditing(entry)"><code>{{ entry.url }}</code></td>
+                    <td ng-show="isEditing(entry)">
+                        <button class="btn btn-sm btn-primary" title="Done" ng-click="saveConfig()"><i class="fa fa-save"></i> Save</button>
+                    </td>
+                    <td ng-hide="isEditing(entry)">
+                        <div class="btn-group btn-group-sm">
+                            <button ng-disabled="$first" class="btn btn-secondary" title="Move up" ng-click="moveUp(entry, config.mappings)"><i class="fa fa-arrow-up"></i></button>
+                            <button ng-disabled="$last" class="btn btn-secondary" title="Move down" ng-click="moveDown(entry, config.mappings)"><i class="fa fa-arrow-down"></i></button>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button ng-disabled="isEditing(entry)" class="btn btn-info" title="Edit" ng-click="editEntry(entry, config.mappings)"><i class="fa fa-pencil"></i></button>
+                            <button class="btn btn-secondary" title="Duplicate" ng-click="duplicate(entry, config.mappings)"><i class="fa fa-copy"></i></button>
+                        </div>
+                        <button class="btn btn-sm btn-danger" title="Remove" ng-click="remove(entry, config.mappings)"><i class="fa fa-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>Active</th>
-                <th>Pattern <span class="label label-default" title="Regular Expression">RE</span></th>
-                <th>URL</th>
-                <th>
-                    <button ng-disabled="!isEditing()" class="btn btn-secondary btn-sm" title="Add mapping" ng-click="add(config.mappings)"><i class="fa fa-plus"></i> Add</button>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-show="!config.mappings.length"><td colspan="5" class="text-center text-muted"><i class="fa fa-info-sign"></i> No mappings defined.</td></tr>
-            <tr ng-repeat="entry in config.mappings track by $index">
-                <td>
-                    <button class="btn btn-sm" ng-class="{'active btn-success': isActive(entry), 'btn-secondary': !isActive(entry)}" ng-click="toggleActive(entry)" title="Toggle active/inactive mapping">
-                        <i class="fa" ng-class="{'fa-check': isActive(entry), 'fa-minus': !isActive(entry)}"></i>
-                    </button>
-                </td>
-                <td ng-show="isEditing(entry)">
-                    <input class="monospace" size="30" type="text" ng-model="entry.pattern"/>
-                </td>
-                <td ng-show="isEditing(entry)">
-                    <div class="form-inline">
-                        <input class="monospace" size="50" type="text" ng-model="entry.url"/>
-                    </div>
-                </td>
-                <td ng-class="{disabled: !isActive(entry)}" ng-hide="isEditing(entry)"><code>{{ entry.pattern }}</code></td>
-                <td ng-class="{disabled: !isActive(entry)}" ng-hide="isEditing(entry)"><code>{{ entry.url }}</code></td>
-                <td ng-show="isEditing(entry)">
-                    <button class="btn btn-sm btn-primary" title="Done" ng-click="saveConfig()"><i class="fa fa-save"></i> Save</button>
-                </td>
-                <td ng-hide="isEditing(entry)">
-                    <div class="btn-group btn-group-sm">
-                        <button ng-disabled="$first" class="btn btn-secondary" title="Move up" ng-click="moveUp(entry, config.mappings)"><i class="fa fa-arrow-up"></i></button>
-                        <button ng-disabled="$last" class="btn btn-secondary" title="Move down" ng-click="moveDown(entry, config.mappings)"><i class="fa fa-arrow-down"></i></button>
-                    </div>
-                    <div class="btn-group btn-group-sm">
-                        <button ng-disabled="isEditing(entry)" class="btn btn-info" title="Edit" ng-click="editEntry(entry, config.mappings)"><i class="fa fa-pencil"></i></button>
-                        <button class="btn btn-secondary" title="Duplicate" ng-click="duplicate(entry, config.mappings)"><i class="fa fa-copy"></i></button>
-                    </div>
-                    <button class="btn btn-sm btn-danger" title="Remove" ng-click="remove(entry, config.mappings)"><i class="fa fa-trash"></i></button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">
+            Servers
+        </span>
+    </div>
+    <div class="card-block">
+        <p>The </p>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th><icon name="server"/>&nbsp;Server name</th>
+                    <th>Interface</th>
+                    <th>SSL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(name, server) in config.servers">
+                    <td><code>{{ name }}</code></td>
+                    <td><code>{{ server.host }}:{{ server.port }}</code></td>
+                    <td>
+                        {{ server.ssl ? "Yes" : "No" }}&nbsp;
+                        <icon ng-show="{{ server.ssl }}" name="lock"></icon>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

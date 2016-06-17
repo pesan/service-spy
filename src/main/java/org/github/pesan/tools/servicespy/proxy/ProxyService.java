@@ -1,6 +1,8 @@
 package org.github.pesan.tools.servicespy.proxy;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -25,6 +27,7 @@ import org.github.pesan.tools.servicespy.action.ActionService;
 import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
+import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,20 +50,14 @@ public class ProxyService extends AbstractVerticle {
 
     @Override
     public void start() {
-        proxyServers.stream().forEach(server -> {
-            startServer(server.getName(), server.getServer(), server.getPort());
-        });
+        proxyServers.stream().forEach(this::startServer);
     }
 
-    private void startServer(String name, HttpServer httpServer, int port) {
-        httpServer.requestHandler(this::handleRequest).listen(port, result -> {
-            if (result.succeeded()) {
-                logger.info(String.format("'%s' proxy server started on port %d", name, port));
-            } else {
-                logger.fatal(String.format("Unable to start '%s' proxy server on port %d", name, port), result.cause());
-            }
-        });
-    }
+	private void startServer(Binding server) {
+		server.getServer()
+			.requestHandler(this::handleRequest)
+			.listen(listenHandlerForServer(server));
+	}
 
     private void handleRequest(HttpServerRequest serverRequest) {
         String requestPath = serverRequest.path();
@@ -112,6 +109,25 @@ public class ProxyService extends AbstractVerticle {
 
         }
     }
+
+	private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
+		return result -> {
+			String name = server.getName();
+			String host = server.getHost();
+			int port = server.getPort();
+			if (result.succeeded()) {
+			    logger.info(String.format(
+			    		"Proxy server '%s' listening on %s:%d",
+			    		name, host, port
+			    ));
+			} else {
+			    logger.fatal(String.format(
+			    		"Unable to start '%s' proxy server on %s:%d",
+			    		name, host, port
+			    ), result.cause());
+			}
+		};
+	}
 
     private LocalDateTime getClockTime() {
         return LocalDateTime.ofInstant(clock.instant(), clock.getZone());

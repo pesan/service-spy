@@ -6,7 +6,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
@@ -36,17 +35,22 @@ public class ProxyConfig {
     @Bean
     public HttpServerBindings proxyServers(Vertx vertx, ProxyProperties proxyProperties) {
         return new HttpServerBindings(proxyProperties.getServers().entrySet().stream()
-            .map(obj -> {
-                    HttpServer a = vertx.createHttpServer(
-                        createServerOptions(vertx, obj.getValue(), proxyProperties)
+            .map(serverSetting -> {
+            		ProxyServer server = serverSetting.getValue();
+                    return new HttpServerBindings.Binding(
+                    		serverSetting.getKey(),
+                    		vertx.createHttpServer(createServerOptions(vertx, server, proxyProperties)),
+                    		server.getHost(),
+                    		server.getPort()
                     );
-                    return new HttpServerBindings.Binding(obj.getKey(), a, obj.getValue().getPort());
             })
             .collect(toList()));
     }
 
     private HttpServerOptions createServerOptions(Vertx vertx, ProxyServer value, ProxyProperties proxyProperties) {
         HttpServerOptions options = new HttpServerOptions()
+        	.setHost(value.getHost())
+        	.setPort(value.getPort())
             .setSsl(value.getSsl());
         if (!StringUtils.isEmpty(value.getJksKeystore())) {
             options.setKeyStoreOptions(

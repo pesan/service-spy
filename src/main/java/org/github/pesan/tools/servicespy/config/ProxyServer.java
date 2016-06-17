@@ -1,6 +1,7 @@
 package org.github.pesan.tools.servicespy.config;
 
 public class ProxyServer {
+	private String host = "0.0.0.0";
     private int port = -1;
     private boolean ssl = false;
     private String jksKeystore;
@@ -9,6 +10,9 @@ public class ProxyServer {
     private String pfxPassword;
     private String pemKeyPath;
     private String pemCertPath;
+
+	public String getHost() { return host; }
+	public void setHost(String host) { this.host = host; }
 
     public int getPort() { return port; }
     public void setPort(int port) { this.port = port; }

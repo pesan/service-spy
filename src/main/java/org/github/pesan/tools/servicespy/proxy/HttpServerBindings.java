@@ -19,11 +19,13 @@ public class HttpServerBindings {
     public static class Binding {
         private final String name;
         private final HttpServer server;
+        private final String host;
         private final int port;
 
-        public Binding(String name, HttpServer server, int port) {
+        public Binding(String name, HttpServer server, String host, int port) {
             this.name = name;
             this.server = server;
+            this.host = host;
             this.port = port;
         }
 
@@ -34,6 +36,10 @@ public class HttpServerBindings {
         public HttpServer getServer() {
             return server;
         }
+
+		public String getHost() {
+			return host;
+		}
 
         public int getPort() {
             return port;
