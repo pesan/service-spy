@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
+import org.github.pesan.tools.util.SslUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,7 @@ public class ProxyTest {
 
     private static Clock clock = mock(Clock.class);
 
-    private final RestTemplate rest = new RestTemplate();
+    private final RestTemplate rest = SslUtils.trustAll(new RestTemplate());
 
     @Before
     public void init() {
@@ -94,7 +95,7 @@ public class ProxyTest {
 
     @Test
     public void shouldProvideExceptionWhenProxiedCallFails() throws IOException {
-        proxyProperties.getMappings().get(0).setUrl("http://localhost:" + 0);
+        proxyProperties.getMappings().get(0).setUrl("http://localhost:0");
 
         try {
             rest.getForObject("http://localhost:65080/invalid", Object.class);
@@ -118,6 +119,20 @@ public class ProxyTest {
             .body("[0].response.hostName", equalTo("localhost"))
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
             .body("[0].response.exception.message", notNullValue())
+            .statusCode(200);
+    }
+
+    @Test
+    public void shouldRespondWhenMakingRequestToHttpsEndpoint() throws IOException {
+        proxyProperties.getMappings().get(0).setUrl("http://localhost:" + port);
+
+        rest.getForObject("https://localhost:65443/test/entity", Object.class);
+
+        given()
+        .when()
+            .get("/api/actions")
+        .then()
+            .body("[0].id", equalTo("87ed7de7-d115-488a-b68a-a903ad308753"))
             .statusCode(200);
     }
 
