@@ -6,6 +6,7 @@ import io.vertx.core.http.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.github.pesan.tools.servicespy.action.ActionService;
+import org.github.pesan.tools.servicespy.action.entry.NoMappingException;
 import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
@@ -67,7 +68,7 @@ public class ProxyService extends AbstractVerticle {
                     .filter(mapping -> mapping.getPattern().matcher(requestPath).matches())
                     .map(mapping -> mapping.getUrl() + requestPathWithQuery)
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No mapping for request path: " + requestPath)));
+                    .orElseThrow(() -> new NoMappingException(requestPath)));
 
             HttpClient client = proxyClients.getByScheme(backendUrl.getProtocol());
             HttpClientRequest clientRequest = client.request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri(), clientResponse -> {
@@ -97,7 +98,7 @@ public class ProxyService extends AbstractVerticle {
             });
             serverRequest.endHandler(v -> clientRequest.end());
 
-        } catch (RuntimeException e) {
+        } catch (NoMappingException e) {
             logger.warn(e.getMessage(), e);
             serverRequest.response().close();
             actionService.log(reqEntry, new ResponseExceptionEntry(null, e, getClockTime()));
