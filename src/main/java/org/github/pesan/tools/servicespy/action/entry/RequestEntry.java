@@ -1,24 +1,24 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.github.pesan.tools.servicespy.action.LocalDateTimeSerializer;
-
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public class RequestEntry {
     private final String requestPath;
     private final String requestPathWithQuery;
     private final String httpMethod;
+    private final Map<String, List<String>> headers;
     private final LocalDateTime time;
 
     private final ByteArrayOutputStream data;
 
-    public RequestEntry(String requestPath, String requestPathWithQuery, String httpMethod, ByteArrayOutputStream data, LocalDateTime time) {
+    public RequestEntry(String requestPath, String requestPathWithQuery, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time) {
         this.requestPath = requestPath;
         this.requestPathWithQuery = requestPathWithQuery;
         this.httpMethod = httpMethod;
+        this.headers = headers;
         this.data = data;
         this.time = time;
     }
@@ -35,15 +35,14 @@ public class RequestEntry {
         return httpMethod;
     }
 
-    public String getData() {
-        try {
-            return data.toString("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+    public Map<String, List<String>> getHeaders() {
+        return headers;
     }
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public byte[] getData() {
+        return data.toByteArray();
+    }
+
     public LocalDateTime getTime() {
         return time;
     }

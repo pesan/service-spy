@@ -1,26 +1,8 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.Clock;
-import java.time.LocalDateTime;
-
-import javax.annotation.PostConstruct;
-
+import io.vertx.core.http.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.github.pesan.tools.servicespy.action.ActionService;
@@ -30,6 +12,19 @@ import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
 import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.*;
 
 @Component
 public class ProxyService extends AbstractVerticle {
@@ -65,7 +60,7 @@ public class ProxyService extends AbstractVerticle {
         ByteArrayOutputStream received = new ByteArrayOutputStream();
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
-        RequestEntry reqEntry = new RequestEntry(requestPath, requestPathWithQuery, serverRequest.method().name(), sent, getClockTime());
+        RequestEntry reqEntry = new RequestEntry(requestPath, requestPathWithQuery, serverRequest.method().name(), parseHeaders(serverRequest.headers()), sent, getClockTime());
         try {
             URL backendUrl = createURL(proxyProperties.getMappings().stream()
                     .filter(ProxyProperties.Mapping::isActive)
@@ -75,7 +70,7 @@ public class ProxyService extends AbstractVerticle {
                     .orElseThrow(() -> new RuntimeException("No mapping for request path: " + requestPath)));
 
             HttpClient client = proxyClients.getByScheme(backendUrl.getProtocol());
-            HttpClientRequest clientRequest = client.request(serverRequest.method(), backendUrl.getPort(), backendUrl.getHost(), serverRequest.uri(), clientResponse -> {
+            HttpClientRequest clientRequest = client.request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri(), clientResponse -> {
                 HttpServerResponse serverResponse = serverRequest.response()
                         .setChunked(true)
                         .setStatusCode(clientResponse.statusCode());
@@ -87,7 +82,7 @@ public class ProxyService extends AbstractVerticle {
                     actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
                     serverResponse.close();
                 }).endHandler(v -> {
-                    actionService.log(reqEntry, new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader("Content-Type"), backendUrl, received.toString(), getClockTime()));
+                    actionService.log(reqEntry, new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader("Content-Type"), backendUrl, parseHeaders(clientResponse.headers()), received.toByteArray(), getClockTime()));
                     serverResponse.end();
                 });
             }).exceptionHandler(throwable -> {
@@ -110,7 +105,16 @@ public class ProxyService extends AbstractVerticle {
         }
     }
 
-	private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
+    private int getPort(URL backendUrl) {
+        return backendUrl.getPort() != -1 ? backendUrl.getPort() : backendUrl.getDefaultPort();
+    }
+
+    private static Map<String, List<String>> parseHeaders(MultiMap headers) {
+        return headers.entries().stream().collect(
+                groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+    }
+
+    private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
 		return result -> {
 			String name = server.getName();
 			String host = server.getHost();

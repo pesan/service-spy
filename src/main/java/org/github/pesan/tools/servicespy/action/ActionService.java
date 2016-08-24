@@ -6,7 +6,6 @@ import org.github.pesan.tools.servicespy.action.entry.ResponseEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import rx.Observable;
 import rx.subjects.ReplaySubject;
 import rx.subjects.SerializedSubject;

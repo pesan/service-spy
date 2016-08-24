@@ -1,19 +1,5 @@
 package org.github.pesan.tools.servicespy;
 
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.RestAssured.port;
-import static java.util.Collections.singletonMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Map;
-
 import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.github.pesan.tools.util.SslUtils;
@@ -34,6 +20,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Base64;
+import java.util.Map;
+
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.port;
+import static java.util.Collections.singletonMap;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebIntegrationTest({"server.port=0", "proxy.servers.http.port=65080", "proxy.servers.https.port=65443"})
@@ -81,14 +83,14 @@ public class ProxyTest {
             .body("[0].request.requestPath", equalTo("/test/entity"))
             .body("[0].request.requestPathWithQuery", equalTo("/test/entity?withQuery"))
             .body("[0].request.httpMethod", equalTo("POST"))
-            .body("[0].request.data", equalTo("{\"id\":\"10993\"}"))
+            .body("[0].request.data", equalTo(toBase64("{\"id\":\"10993\"}")))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
             .body("[0].response.status", equalTo(201))
             .body("[0].response.contentType", equalTo("application/json; charset=UTF-8"))
             .body("[0].response.host", equalTo("localhost:" + port))
             .body("[0].response.port", equalTo(port))
             .body("[0].response.hostName", equalTo("localhost"))
-            .body("[0].response.data", equalTo("{\"data\":\"entity\"}"))
+            .body("[0].response.data", equalTo(toBase64("{\"data\":\"entity\"}")))
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
             .statusCode(200);
     }
@@ -136,6 +138,9 @@ public class ProxyTest {
             .statusCode(200);
     }
 
+    private String toBase64(String text) {
+        return Base64.getEncoder().encodeToString(text.getBytes(Charset.forName("UTF-8")));
+    }
 
     @Value("${local.server.port}")
     public void setPort(int serverPort) {

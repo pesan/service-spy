@@ -1,7 +1,10 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.ZoneOffset;
 
+@JsonSerialize(using=LogEntrySerializer.class)
 public class LogEntry {
 
     private final String id;

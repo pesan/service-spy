@@ -40,17 +40,20 @@
     </fieldset>
 </form>
 
-<div class="card" ng-class="{'card-danger-outline': entry.response.exception, 'card-warning-outline': !entry.response.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
+<div class="card" ng-class="{'card-outline-danger': entry.response.exception, 'card-outline-warning': !entry.response.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
     <div class="card-header">
         <span class="card-title">
             {{ entry.request.time | date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMillis }} ms)
         </span>
 
-        <span ng-hide="entry.response.exception" class="monospace label" ng-class="{'label-success': entry.response.status/100===2, 'label-warning': entry.response.status/100===3, 'label-danger': entry.response.status/100!==2&&entry.response.status/100!==3}">
+        <span ng-hide="entry.response.exception" class="monospace tag" ng-class="{'tag-success': entry.response.status/100===2, 'tag-warning': entry.response.status/100===3, 'tag-danger': !(entry.response.status/100===2 || entry.response.status/100===3)}">
             {{ entry.response.status }}
         </span>
-        <a class="monospace label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.response.host})">{{ entry.response.host }}</a>
-        <a title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}" class="monospace label label-default" ui-sref-active="label-primary" ui-sref="actions({filter:entry.request.requestPath})">
+        <span ng-show="entry.response.exception" class="monospace tag tag-danger">
+            Exception
+        </span>
+        <a class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.response.host})">{{ entry.response.host }}</a>
+        <a title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}" class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.request.requestPath})">
             {{ entry.request.httpMethod }} {{ entry.request.requestPath }}
         </a>
         <span class="btn-group btn-group-sm pull-xs-right">
@@ -63,19 +66,9 @@
         </span>
     </div>
     <div class="card-block" ng-class="{collapse: !entry.expanded}">
-        <div ng-hide="entry.response.exception" class="row">
-            <div class="card card-block col-md-6 col-xs-12">
-                <pre ng-if="entry.request.data">{{ entry.request.data }}</pre>
-            </div>
-            <div class="card card-block col-md-6 col-xs-12">
-                <pre ng-if="entry.response.data">{{ entry.response.data }}</pre>
-            </div>
-        </div>
-
-        <div ng-show="entry.response.exception" class="row">
-            <div class="col-xs-12">
-                <exception value="entry.response.exception"></exception>
-            </div>
+        <div class="card-group">
+            <httpentry ng-if="!entry.response.exception" class="card" name="Request" id="request" entry="entry" model="entry.request"></httpentry>
+            <httpentry class="card" name="Response" id="response" entry="entry" model="entry.response"></httpentry>
         </div>
     </div>
 </div>

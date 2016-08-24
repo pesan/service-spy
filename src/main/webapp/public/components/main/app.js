@@ -38,7 +38,7 @@ angular.module('tools.servicespy', [
                 stream: function($stateParams, canStream) {
                     return canStream && $stateParams.stream === 'true';
                 },
-                entryState: function(ActionService, show, $timeout, textFormatter, stream, Toast) {
+                entryState: function(ActionService, show, $timeout, stream, Toast) {
                     var state = {
                         active: stream,
                         entries: []
@@ -52,10 +52,9 @@ angular.module('tools.servicespy', [
                         if (_.some(state.entries, 'id', entry.id)) {
                             clearEntries();
                         }
-                        var formatter = textFormatter(entry.response.contentType);
                         entry.expanded = show;
-                        entry.requestData = formatter(entry.request.data);
-                        entry.responseData = formatter(entry.response.data);
+                        entry.request.href = entry.href.requestData;
+                        entry.response.href = entry.href.responseData;
                         entry.isNew = stream;
                         state.entries.unshift(entry);
                         $timeout(function() { delete entry.isNew; }, 3000);
@@ -109,14 +108,5 @@ config(function($httpProvider) {
         $timeout(function() {
             $rootScope.toasts = _.without($rootScope.toasts, toast);
         }, 5000);
-    };
-})
-.factory('textFormatter', function($filter) {
-    var formatters = {
-        'application/xml': $filter('xml'),
-        'application/json': function(text) { return _.isEmpty(text) ? "" : angular.toJson(angular.fromJson(text), 2); }
-    };
-    return function(contentType) {
-        return formatters[(contentType || '').replace(/;.*/, '')] || _.identity;
     };
 });

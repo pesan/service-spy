@@ -1,10 +1,5 @@
 package org.github.pesan.tools.servicespy.config;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties.Mapping;
 import org.junit.Before;
@@ -13,6 +8,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigControllerTest {

@@ -1,16 +1,15 @@
 package org.github.pesan.tools.servicespy.proxy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.github.pesan.tools.servicespy.config.ProxyServer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.github.pesan.tools.servicespy.config.ProxyServer;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Component
 @ConfigurationProperties(prefix="proxy")

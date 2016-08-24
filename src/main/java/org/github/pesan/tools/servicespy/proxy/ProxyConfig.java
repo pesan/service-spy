@@ -1,7 +1,5 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import static java.util.stream.Collectors.toList;
-import static org.springframework.util.FileCopyUtils.copyToByteArray;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -10,9 +8,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PfxOptions;
-
-import java.io.IOException;
-
 import org.github.pesan.tools.servicespy.config.ProxyServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +16,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.FileCopyUtils.copyToByteArray;
 
 @Configuration
 public class ProxyConfig {

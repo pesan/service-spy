@@ -1,13 +1,9 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.github.pesan.tools.servicespy.action.LocalDateTimeSerializer;
-
 import java.net.URL;
 import java.time.LocalDateTime;
 
 public interface ResponseEntry {
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     LocalDateTime getTime();
     URL getUrl();
 
