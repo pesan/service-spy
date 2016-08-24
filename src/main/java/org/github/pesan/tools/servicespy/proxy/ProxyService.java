@@ -1,35 +1,49 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import io.vertx.core.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.github.pesan.tools.servicespy.action.ActionService;
-import org.github.pesan.tools.servicespy.action.entry.NoMappingException;
-import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
-import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
-import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
-import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.*;
+import javax.annotation.PostConstruct;
+
+import org.github.pesan.tools.servicespy.action.ActionService;
+import org.github.pesan.tools.servicespy.action.entry.NoMappingException;
+import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
+import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
+import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProxyService extends AbstractVerticle {
-    private static final Log logger = LogFactory.getLog(ProxyService.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
 
     private @Autowired ActionService actionService;
     private @Autowired ProxyProperties proxyProperties;
@@ -56,41 +70,20 @@ public class ProxyService extends AbstractVerticle {
 	}
 
     private void handleRequest(HttpServerRequest serverRequest) {
-        String requestPath = serverRequest.path();
-        String requestPathWithQuery = serverRequest.uri();
         ByteArrayOutputStream received = new ByteArrayOutputStream();
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
-        RequestEntry reqEntry = new RequestEntry(requestPath, requestPathWithQuery, serverRequest.method().name(), parseHeaders(serverRequest.headers()), sent, getClockTime());
-        try {
-            URL backendUrl = createURL(proxyProperties.getMappings().stream()
-                    .filter(ProxyProperties.Mapping::isActive)
-                    .filter(mapping -> mapping.getPattern().matcher(requestPath).matches())
-                    .map(mapping -> mapping.getUrl() + requestPathWithQuery)
-                    .findFirst()
-                    .orElseThrow(() -> new NoMappingException(requestPath)));
+        URI requestUri = URI.create(serverRequest.uri());
 
-            HttpClient client = proxyClients.getByScheme(backendUrl.getProtocol());
-            HttpClientRequest clientRequest = client.request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri(), clientResponse -> {
-                HttpServerResponse serverResponse = serverRequest.response()
-                        .setChunked(true)
-                        .setStatusCode(clientResponse.statusCode());
-                serverResponse.headers().setAll(clientResponse.headers());
-                clientResponse.handler(data -> {
-                    write(received, data);
-                    serverResponse.write(data);
-                }).exceptionHandler(throwable -> {
-                    actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
-                    serverResponse.close();
-                }).endHandler(v -> {
-                    actionService.log(reqEntry, new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader("Content-Type"), backendUrl, parseHeaders(clientResponse.headers()), received.toByteArray(), getClockTime()));
-                    serverResponse.end();
-                });
-            }).exceptionHandler(throwable -> {
-                actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
-                serverRequest.response().close();
-            });
-            clientRequest.setChunked(true);
+        RequestEntry reqEntry = new RequestEntry(requestUri, serverRequest.method().name(), parseHeaders(serverRequest.headers()), sent, getClockTime());
+        try {
+
+        	URL backendUrl = getBackendUrl(reqEntry);
+            HttpClientRequest clientRequest = createClientRequest(serverRequest, backendUrl)
+            		.handler(responseHandler(serverRequest, received, reqEntry, backendUrl))
+            		.exceptionHandler(responseExceptionHandler(serverRequest, reqEntry, backendUrl))
+            		.setChunked(true);
+
             clientRequest.headers().setAll(serverRequest.headers());
             serverRequest.handler(data -> {
                 write(sent, data);
@@ -102,34 +95,72 @@ public class ProxyService extends AbstractVerticle {
             logger.warn(e.getMessage(), e);
             serverRequest.response().close();
             actionService.log(reqEntry, new ResponseExceptionEntry(null, e, getClockTime()));
-
         }
     }
 
-    private int getPort(URL backendUrl) {
-        return backendUrl.getPort() != -1 ? backendUrl.getPort() : backendUrl.getDefaultPort();
-    }
+	private HttpClientRequest createClientRequest(HttpServerRequest serverRequest, URL backendUrl) {
+		return proxyClients.getByScheme(backendUrl.getProtocol())
+				.request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri());
+	}
 
-    private static Map<String, List<String>> parseHeaders(MultiMap headers) {
-        return headers.entries().stream().collect(
-                groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
-    }
+	private int getPort(URL backendUrl) {
+		int port = backendUrl.getPort();
+		return port != -1 ? port : backendUrl.getDefaultPort();
+	}
 
-    private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
+	private URL getBackendUrl(RequestEntry requestEntry) {
+		return createURL(proxyProperties.getMappings().stream()
+		        .filter(ProxyProperties.Mapping::isActive)
+		        .filter(mapping -> mapping.getPattern().matcher(requestEntry.getRequestPath()).matches())
+		        .map(mapping -> mapping.getUrl() + requestEntry.getRequestPathWithQuery())
+		        .findFirst()
+		        .orElseThrow(() -> new NoMappingException(requestEntry.getRequestPath())));
+	}
+
+	private Handler<Throwable> responseExceptionHandler(HttpServerRequest serverRequest,
+			RequestEntry reqEntry, URL backendUrl) {
+		return throwable -> {
+            actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
+            serverRequest.response().close();
+         };
+	}
+
+	private Handler<HttpClientResponse> responseHandler(
+			HttpServerRequest serverRequest, ByteArrayOutputStream received,
+			RequestEntry reqEntry, URL backendUrl) {
+		return clientResponse -> {
+            HttpServerResponse serverResponse = serverRequest.response()
+            		.setChunked(true)
+            		.setStatusCode(clientResponse.statusCode());
+            serverResponse.headers().setAll(clientResponse.headers());
+            clientResponse.handler(data -> {
+				write(received, data);
+				serverResponse.write(data);
+            }).exceptionHandler(throwable -> {
+				actionService.log(reqEntry, new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
+				serverResponse.close();
+            }).endHandler(v -> {
+				actionService.log(reqEntry, new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader(HttpHeaders.CONTENT_TYPE), backendUrl, parseHeaders(clientResponse.headers()), received.toByteArray(), getClockTime()));
+				serverResponse.end();
+            });
+         };
+	}
+
+	private static Map<String, List<String>> parseHeaders(MultiMap headers) {
+		return headers.entries().stream().collect(
+				groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+	}
+
+
+	private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
 		return result -> {
 			String name = server.getName();
 			String host = server.getHost();
 			int port = server.getPort();
 			if (result.succeeded()) {
-			    logger.info(String.format(
-			    		"Proxy server '%s' listening on %s:%d",
-			    		name, host, port
-			    ));
+			    logger.info("Proxy server '{}' listening on {}:{}", name, host, port);
 			} else {
-			    logger.fatal(String.format(
-			    		"Unable to start '%s' proxy server on %s:%d",
-			    		name, host, port
-			    ), result.cause());
+				logger.error("Unable to start '{}' proxy server on {}:{}", name, host, port, result.cause());
 			}
 		};
 	}

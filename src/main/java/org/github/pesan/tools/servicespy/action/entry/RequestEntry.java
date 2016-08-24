@@ -1,6 +1,7 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +15,9 @@ public class RequestEntry {
 
     private final ByteArrayOutputStream data;
 
-    public RequestEntry(String requestPath, String requestPathWithQuery, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time) {
-        this.requestPath = requestPath;
-        this.requestPathWithQuery = requestPathWithQuery;
+    public RequestEntry(URI requestUri, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time) {
+        this.requestPath = requestUri.getPath();
+        this.requestPathWithQuery = requestUri.getPath() + (requestUri.getQuery() != null ? "?" + requestUri.getQuery() : "");
         this.httpMethod = httpMethod;
         this.headers = headers;
         this.data = data;
