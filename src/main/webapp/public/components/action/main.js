@@ -91,6 +91,23 @@ angular.module('tools.servicespy.action', ['api'])
         }
     };
 })
+.directive('activateTab', function() {
+    return {
+        restrict: 'A',
+        scope: {
+            activateTab: '@'
+        },
+        link: function(scope, element) {
+            element.attr('role', 'tab');
+            element.attr('data-toggle', 'tab');
+            element.attr('href', '#' + scope.activateTab);
+            element.on('click', function(event) {
+                event.preventDefault();
+                this.tab('show');
+            });
+        }
+    }
+})
 .directive('httpentry', function() {
     return {
         restrict: 'E',
@@ -105,10 +122,10 @@ angular.module('tools.servicespy.action', ['api'])
             '   <div class="card-header">' +
             '      <ul class="nav nav-tabs card-header-tabs pull-xs-left" role="tablist">' +
             '           <li class="nav-item">' +
-            '               <a class="nav-link active" ng-href="#{{ id }}-data-{{ entry.id }}" role="tab" data-toggle="tab">{{ name }} Data</a>' +
+            '               <a class="nav-link active" activate-tab="{{ id }}-data-{{ entry.id }}">{{ name }} Data</a>' +
             '           </li>' +
             '           <li class="nav-item">' +
-            '               <a class="nav-link" ng-href="#{{ id }}-headers-{{ entry.id }}" role="tab" data-toggle="tab">Headers</a>' +
+            '               <a class="nav-link" activate-tab="{{ id }}-headers-{{ entry.id }}">Headers</a>' +
             '           </li>' +
             '       </ul>' +
             '       <div class="pull-xs-right">' +
