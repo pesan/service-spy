@@ -52,22 +52,24 @@ public class ObservableConfig extends WebMvcConfigurerAdapter {
             if (returnValue == null) {
                 return;
             }
-            Observable<?> observable = Observable.class.cast(returnValue);
+            Observable<Object> observable = Observable.class.cast(returnValue);
             WebAsyncUtils.getAsyncManager(webRequest)
                     .startDeferredResultProcessing(asDeferredResult(observable, webRequest), mavContainer);
         }
 
-        private <T> DeferredResult<T> asDeferredResult(Observable<T> observable, NativeWebRequest request) {
-            DeferredResult<T> deferred = new DeferredResult<>(timeout);
-            observable.subscribe(result -> {
-                if (HttpStatus.class.equals(result.getClass())) {
-                    request.getNativeResponse(HttpServletResponse.class).setStatus(((HttpStatus) result).value());
-                    setStatusCode(request, (HttpStatus) result);
-                    deferred.setResult(null);
-                } else {
-                    deferred.setResult(result);
-                }
-            }, deferred::setErrorResult);
+        private DeferredResult<Object> asDeferredResult(Observable<Object> observable, NativeWebRequest request) {
+            DeferredResult<Object> deferred = new DeferredResult<>(timeout);
+            observable
+                .singleOrDefault(HttpStatus.NOT_FOUND)
+                .subscribe(result -> {
+                    if (HttpStatus.class.equals(result.getClass())) {
+                        request.getNativeResponse(HttpServletResponse.class).setStatus(((HttpStatus) result).value());
+                        setStatusCode(request, (HttpStatus) result);
+                        deferred.setResult(null);
+                    } else {
+                        deferred.setResult(result);
+                    }
+                }, deferred::setErrorResult);
             return deferred;
         }
 

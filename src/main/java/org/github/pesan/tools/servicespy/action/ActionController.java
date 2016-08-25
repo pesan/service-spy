@@ -39,7 +39,7 @@ public class ActionController {
 
     @RequestMapping(value="/{id}/data/request/", method=GET)
     public Observable<byte[]> requestData(@PathVariable("id") String id) {
-        return actionService.streamList()
+        return actionService.list()
                 .filter(entry -> entry.getId().equals(id))
                 .map(LogEntry::getRequest)
                 .map(RequestEntry::getData);
@@ -47,7 +47,7 @@ public class ActionController {
 
     @RequestMapping(value="/{id}/data/response/", method=GET)
     public Observable<ResponseEntity<byte[]>> responseData(@PathVariable("id") String id) {
-        return actionService.streamList()
+        return actionService.list()
                 .filter(entry -> entry.getId().equals(id))
                 .map(LogEntry::getResponse)
                 .filter(ResponseDataEntry.class::isInstance)
