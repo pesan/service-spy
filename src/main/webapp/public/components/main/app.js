@@ -53,6 +53,8 @@ angular.module('tools.servicespy', [
                             clearEntries();
                         }
                         entry.expanded = show;
+                        entry.request.data = atob(entry.request.data);
+                        entry.response.data = atob(entry.response.data);
                         entry.request.href = entry.href.requestData;
                         entry.response.href = entry.href.responseData;
                         entry.isNew = stream;
