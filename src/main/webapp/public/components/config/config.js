@@ -25,7 +25,7 @@ angular.module('tools.servicespy.config', ['api'])
     };
     $scope.saveConfig = function() {
         delete $scope.edit;
-        ConfigService.save($scope.config).then(function() {
+        ConfigService.save($scope.config).finally(function() {
             $state.reload();
         });
     };

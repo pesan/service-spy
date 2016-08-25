@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
 import rx.Observable;
 
 @RestController
@@ -27,11 +28,18 @@ public class ConfigController {
 
     @RequestMapping(method=RequestMethod.PUT)
     public Observable<HttpStatus> put(@RequestBody ProxyProperties newConfig) {
-        return Observable.just(newConfig)
-                .doOnNext(x -> {
-                    config.getMappings().clear();
-                    config.getMappings().addAll(newConfig.getMappings());
-                })
-                .map(x -> HttpStatus.NO_CONTENT);
+    	return get()
+    			.map(config -> {
+        			boolean valid = newConfig.getMappings().stream().allMatch(mapping -> {
+        				return mapping.getUrl().startsWith("http:") || mapping.getUrl().startsWith("https:");
+        			});
+
+        			if (!valid) {
+        				return HttpStatus.BAD_REQUEST;
+        			}
+        			config.getMappings().clear();
+        			config.getMappings().addAll(newConfig.getMappings());
+        			return HttpStatus.NO_CONTENT;
+    			});
     }
 }
