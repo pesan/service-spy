@@ -46,7 +46,7 @@
             {{ entry.request.time | date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMillis }} ms)
         </span>
 
-        <span ng-hide="entry.response.exception" class="monospace tag" ng-class="{'tag-success': entry.response.status/100===2, 'tag-warning': entry.response.status/100===3, 'tag-danger': !(entry.response.status/100===2 || entry.response.status/100===3)}">
+        <span ng-hide="entry.response.exception" class="monospace tag" ng-class="{'tag-success': isOkStatus(entry), 'tag-warning': isRedirectStatus(entry), 'tag-danger': isErrorStatus(entry)}">
             {{ entry.response.status }}
         </span>
         <span ng-show="entry.response.exception" class="monospace tag tag-danger">

@@ -26,6 +26,18 @@ angular.module('tools.servicespy.action', ['api'])
     $scope.toggleAll = function(show) {
         $scope.refresh({ show: show });
     };
+
+    $scope.isOkStatus = function(entry) {
+        return parseInt(entry.response.status/100) <= 2;
+    };
+
+    $scope.isRedirectStatus = function(entry) {
+        return parseInt(entry.response.status/100) === 3;
+    };
+
+    $scope.isErrorStatus = function(entry) {
+        return parseInt(entry.response.status/100) >= 4;
+    };
 })
 .factory('ActionService', function($api) {
     return {
