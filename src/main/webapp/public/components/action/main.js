@@ -103,7 +103,6 @@ angular.module('tools.servicespy.action', ['api'])
             element.attr('href', '#' + scope.activateTab);
             element.on('click', function(event) {
                 event.preventDefault();
-                this.tab('show');
             });
         }
     }
@@ -124,7 +123,7 @@ angular.module('tools.servicespy.action', ['api'])
             '           <li class="nav-item">' +
             '               <a class="nav-link active" activate-tab="{{ id }}-data-{{ entry.id }}">{{ name }} Data</a>' +
             '           </li>' +
-            '           <li class="nav-item">' +
+            '           <li class="nav-item" ng-if="model.headers">' +
             '               <a class="nav-link" activate-tab="{{ id }}-headers-{{ entry.id }}">Headers</a>' +
             '           </li>' +
             '       </ul>' +
