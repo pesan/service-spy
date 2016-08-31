@@ -35,7 +35,7 @@ public class ActionService {
     }
 
     public Observable<LogEntry> list() {
-        return Observable.from(replay.getValues(new LogEntry[replay.size()]));
+        return replay.take(replay.size());
     }
 
     public Observable<LogEntry> streamList() {
