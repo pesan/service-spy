@@ -40,16 +40,16 @@
     </fieldset>
 </form>
 
-<div class="card" ng-class="{'card-outline-danger': entry.response.exception, 'card-outline-warning': !entry.response.exception && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
+<div class="card" ng-class="{'card-outline-danger': entry.request.exception || entry.response.exception, 'card-outline-warning': !(entry.response.exception || entry.response.exception) && entry.isNew }" ng-repeat="entry in requestLogs|filter:filter">
     <div class="card-header">
         <span class="card-title">
             {{ entry.request.time | date:'yyyy-MM-dd HH:mm:ss' }} ({{ entry.responseTimeMillis }} ms)
         </span>
 
-        <span ng-hide="entry.response.exception" class="monospace tag" ng-class="{'tag-success': isOkStatus(entry), 'tag-warning': isRedirectStatus(entry), 'tag-danger': isErrorStatus(entry)}">
+        <span ng-hide="entry.request.exception || entry.response.exception" class="monospace tag" ng-class="{'tag-success': isOkStatus(entry), 'tag-warning': isRedirectStatus(entry), 'tag-danger': isErrorStatus(entry)}">
             {{ entry.response.status }}
         </span>
-        <span ng-show="entry.response.exception" class="monospace tag tag-danger">
+        <span ng-show="entry.request.exception || entry.response.exception" class="monospace tag tag-danger">
             Exception
         </span>
         <a class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.response.host})">{{ entry.response.host }}</a>

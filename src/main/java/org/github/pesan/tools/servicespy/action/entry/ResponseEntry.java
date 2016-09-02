@@ -7,6 +7,21 @@ public interface ResponseEntry {
     LocalDateTime getTime();
     URL getUrl();
 
+
+    static ResponseEntry empty(URL url, LocalDateTime time) {
+    	return new ResponseEntry() {
+	    	@Override
+			public URL getUrl() {
+				return url;
+			}
+
+			@Override
+			public LocalDateTime getTime() {
+				return time;
+			}
+		};
+    }
+
     default String getHost() {
         URL url = getUrl();
         if (url == null) return "";

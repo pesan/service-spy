@@ -71,11 +71,11 @@ angular.module('tools.servicespy.action', ['api'])
 })
 .directive('dataview', function($compile) {
     var contentViews = [
-        { pattern: /image\/.*/, template: '<img ng-src="{{ model.href }}">' },
-        { pattern: /application\/.*xml.*/, template: '<pre>{{ model.data | xml }}</pre>' },
-        { pattern: /application\/json/, template: '<pre>{{ model.data | json }}</pre>' },
-        { pattern: /text\/.*/, template: '<pre>{{ model.data }}</pre>' },
-        { pattern: /.*/, template: '<pre>{{ model.data | hex }}</pre>' }
+        { pattern: /image\/.*/, template: '<img class="dataview" ng-src="{{ model.href }}">' },
+        { pattern: /application\/.*xml.*/, template: '<pre class="dataview">{{ model.data | xml }}</pre>' },
+        { pattern: /application\/json/, template: '<pre class="dataview">{{ model.data | json }}</pre>' },
+        { pattern: /text\/.*/, template: '<pre class="dataview">{{ model.data }}</pre>' },
+        { pattern: /.*/, template: '<pre class="dataview">{{ model.data | hex }}</pre>' }
     ];
     return {
         restrict: 'E',
@@ -120,8 +120,11 @@ angular.module('tools.servicespy.action', ['api'])
             '<div>' +
             '   <div class="card-header">' +
             '      <ul class="nav nav-tabs card-header-tabs pull-xs-left" role="tablist">' +
+            '           <li class="nav-item" ng-if="model.exception">' +
+            '               <a class="nav-link" ng-class="{active: model.exception}" activate-tab="{{ id }}-exception-{{ entry.id }}">Exception</a>' +
+            '           </li>' +
             '           <li class="nav-item">' +
-            '               <a class="nav-link active" activate-tab="{{ id }}-data-{{ entry.id }}">{{ name }} Data</a>' +
+            '               <a class="nav-link" ng-class="{active: !model.exception}" activate-tab="{{ id }}-data-{{ entry.id }}">{{ name }} Data</a>' +
             '           </li>' +
             '           <li class="nav-item" ng-if="model.headers">' +
             '               <a class="nav-link" activate-tab="{{ id }}-headers-{{ entry.id }}">Headers</a>' +
@@ -132,9 +135,11 @@ angular.module('tools.servicespy.action', ['api'])
             '       </div>' +
             '   </div>' +
             '   <div class="card-block tab-content">' +
-            '       <div class="tab-pane active" id="{{ id }}-data-{{ entry.id }}" role="tabpanel">' +
-            '           <dataview ng-if="!model.exception" model="model"></dataview>' +
-            '           <exception ng-if="model.exception" value="model.exception"></exception>' +
+            '       <div class="tab-pane dataview" ng-class="{active: model.exception}" id="{{ id }}-exception-{{ entry.id }}" role="tabpanel">' +
+            '           <exception class="dataview" value="model.exception"></exception>' +
+            '       </div>' +
+            '       <div class="tab-pane" ng-class="{active: !model.exception}" id="{{ id }}-data-{{ entry.id }}" role="tabpanel">' +
+            '           <dataview model="model"></dataview>' +
             '       </div>' +
             '       <div class="tab-pane" id="{{ id }}-headers-{{ entry.id }}" role="tabpanel">' +
             '           <table class="table table-sm">' +
