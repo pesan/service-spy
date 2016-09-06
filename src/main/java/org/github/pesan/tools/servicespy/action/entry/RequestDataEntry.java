@@ -19,11 +19,11 @@ public class RequestDataEntry implements RequestEntry {
     private final ByteArrayOutputStream data;
 
     public static RequestDataEntry fromContext(RequestContext context, ByteArrayOutputStream received) {
-    	return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), received, context.getStartTime(), null);
+        return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), received, context.getStartTime(), null);
     }
 
     public static RequestDataEntry fromContext(RequestContext context, Exception exception) {
-    	return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), new ByteArrayOutputStream(), context.getStartTime(), exception);
+        return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), new ByteArrayOutputStream(), context.getStartTime(), exception);
     }
 
     public RequestDataEntry(URI requestUri, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time, Exception exception) {
@@ -37,36 +37,36 @@ public class RequestDataEntry implements RequestEntry {
     }
 
     @Override
-	public String getRequestPath() {
+    public String getRequestPath() {
         return requestPath;
     }
 
     @Override
-	public String getRequestPathWithQuery() {
+    public String getRequestPathWithQuery() {
         return requestPathWithQuery;
     }
 
     @Override
-	public String getHttpMethod() {
+    public String getHttpMethod() {
         return httpMethod;
     }
 
     @Override
-	public Map<String, List<String>> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
     @Override
-	public byte[] getData() {
+    public byte[] getData() {
         return data.toByteArray();
     }
 
     @Override
-	public LocalDateTime getTime() {
+    public LocalDateTime getTime() {
         return time;
     }
 
-	public Exception getException() {
-		return exception;
-	}
+    public Exception getException() {
+        return exception;
+    }
 }

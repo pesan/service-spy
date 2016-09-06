@@ -57,7 +57,7 @@ public class ProxyTest {
                 .thenReturn(Instant.EPOCH)
                 .thenReturn(Instant.EPOCH.plusMillis(74));
 
-		when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
+        when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
         given().delete("/api/actions");
     }
 
@@ -101,9 +101,9 @@ public class ProxyTest {
         proxyProperties.getMappings().get(0).setPattern("$.");
 
         try {
-        	rest.getForObject("http://localhost:65080/nomatch", Object.class);
+            rest.getForObject("http://localhost:65080/nomatch", Object.class);
         } catch (ResourceAccessException ignored) {
-        	// expected
+            // expected
         }
 
         given()

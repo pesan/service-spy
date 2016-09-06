@@ -1,5 +1,11 @@
 package org.github.pesan.tools.servicespy.action;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
@@ -13,19 +19,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import rx.Observable;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/api/actions")
 public class ActionController {
-    private @Autowired ActionService actionService;
-    private @Value("${stream.timeout:86400000}") long timeout;
+    private final ActionService actionService;
+    private final long timeout;
+
+    @Autowired
+    public ActionController(ActionService actionService,
+            @Value("${stream.timeout:86400000}") long timeout) {
+        this.actionService = actionService;
+        this.timeout = timeout;
+    }
 
     @RequestMapping(method=GET)
     public Observable<List<LogEntry>> list() {

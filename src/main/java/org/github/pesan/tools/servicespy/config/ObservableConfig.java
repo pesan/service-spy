@@ -1,5 +1,11 @@
 package org.github.pesan.tools.servicespy.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -12,17 +18,12 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import rx.Observable;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
+import rx.Observable;
 
 @Configuration
 public class ObservableConfig extends WebMvcConfigurerAdapter {
-    @Autowired
-    private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
+    private @Autowired RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
     @Value("${server.timeout:2000}")
     private long timeout;
@@ -36,7 +37,7 @@ public class ObservableConfig extends WebMvcConfigurerAdapter {
     }
 
     private static class ObservableReturnValueHandler implements HandlerMethodReturnValueHandler {
-        private long timeout;
+        private final long timeout;
 
         public ObservableReturnValueHandler(long timeout) {
             this.timeout = timeout;

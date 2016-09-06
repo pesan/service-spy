@@ -13,46 +13,46 @@ import java.util.List;
 import java.util.Map;
 
 public class RequestContext {
-	private final HttpServerRequest serverRequest;
-	private final LocalDateTime startTime;
-	private final URI requestUri;
+    private final HttpServerRequest serverRequest;
+    private final LocalDateTime startTime;
+    private final URI requestUri;
 
-	public RequestContext(HttpServerRequest serverRequest, LocalDateTime startTime) {
-		this.requestUri = URI.create(serverRequest.uri());
-		this.serverRequest = serverRequest;
-		this.startTime = startTime;
-	}
+    public RequestContext(HttpServerRequest serverRequest, LocalDateTime startTime) {
+        this.requestUri = URI.create(serverRequest.uri());
+        this.serverRequest = serverRequest;
+        this.startTime = startTime;
+    }
 
-	public String getRequestPath() {
-		return getRequestUri().getPath();
-	}
+    public String getRequestPath() {
+        return getRequestUri().getPath();
+    }
 
-	public String getRequestPathWithQuery() {
-		return getRequestUri().getPath() + (getRequestUri().getQuery() != null ? "?" + getRequestUri().getQuery() : "");
-	}
+    public String getRequestPathWithQuery() {
+        return getRequestUri().getPath() + (getRequestUri().getQuery() != null ? "?" + getRequestUri().getQuery() : "");
+    }
 
-	public Map<String, List<String>> getRequestHeaders() {
-		return parseHeaders(serverRequest.headers());
-	}
+    public Map<String, List<String>> getRequestHeaders() {
+        return parseHeaders(serverRequest.headers());
+    }
 
-	public LocalDateTime getStartTime() {
-		return startTime;
-	}
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
 
-	public URI getRequestUri() {
-		return requestUri;
-	}
+    public URI getRequestUri() {
+        return requestUri;
+    }
 
-	public String getRequestMethod() {
-		return serverRequest.method().name();
-	}
+    public String getRequestMethod() {
+        return serverRequest.method().name();
+    }
 
-	public HttpServerResponse getResponse() {
-		return serverRequest.response();
-	}
+    public HttpServerResponse getResponse() {
+        return serverRequest.response();
+    }
 
-	private static Map<String, List<String>> parseHeaders(MultiMap headers) {
-		return headers.entries().stream().collect(
-				groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
-	}
+    private static Map<String, List<String>> parseHeaders(MultiMap headers) {
+        return headers.entries().stream().collect(
+                groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+    }
 }

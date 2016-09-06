@@ -28,8 +28,8 @@ public class ConfigControllerTest {
 
     @Before
     public void setup() {
-    	when(httpMapping.getUrl()).thenReturn("http://mapping1");
-    	when(httpsMapping.getUrl()).thenReturn("https://mapping2");
+        when(httpMapping.getUrl()).thenReturn("http://mapping1");
+        when(httpsMapping.getUrl()).thenReturn("https://mapping2");
         configController = new ConfigController(proxyProperties);
     }
 
@@ -74,12 +74,12 @@ public class ConfigControllerTest {
     }
 
     private Mapping mapping(String url) {
-    	Mapping mapping = mock(Mapping.class);
-    	when(mapping.getUrl()).thenReturn(url);
-		return mapping;
-	}
+        Mapping mapping = mock(Mapping.class);
+        when(mapping.getUrl()).thenReturn(url);
+        return mapping;
+    }
 
-	private HttpStatus updateProxyConfig(ProxyProperties proxyConfig) {
+    private HttpStatus updateProxyConfig(ProxyProperties proxyConfig) {
         return configController.put(proxyConfig).toBlocking().single();
     }
 

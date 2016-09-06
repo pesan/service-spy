@@ -9,17 +9,17 @@ public interface ResponseEntry {
 
 
     static ResponseEntry empty(URL url, LocalDateTime time) {
-    	return new ResponseEntry() {
-	    	@Override
-			public URL getUrl() {
-				return url;
-			}
+        return new ResponseEntry() {
+            @Override
+            public URL getUrl() {
+                return url;
+            }
 
-			@Override
-			public LocalDateTime getTime() {
-				return time;
-			}
-		};
+            @Override
+            public LocalDateTime getTime() {
+                return time;
+            }
+        };
     }
 
     default String getHost() {

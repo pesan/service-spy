@@ -45,6 +45,8 @@ public class ProxyService extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
 
+    private @Autowired Vertx vertx;
+
     private @Autowired ActionService actionService;
     private @Autowired ProxyProperties proxyProperties;
 
@@ -55,7 +57,7 @@ public class ProxyService extends AbstractVerticle {
 
     @PostConstruct
     public void init() {
-        Vertx.vertx().deployVerticle(this);
+        vertx.deployVerticle(this);
     }
 
     @Override
@@ -63,24 +65,24 @@ public class ProxyService extends AbstractVerticle {
         proxyServers.stream().forEach(this::startServer);
     }
 
-	private void startServer(Binding server) {
-		server.getServer()
-			.requestHandler(this::handleRequest)
-			.listen(listenHandlerForServer(server));
-	}
+    private void startServer(Binding server) {
+        server.getServer()
+            .requestHandler(this::handleRequest)
+            .listen(listenHandlerForServer(server));
+    }
 
-	private void handleRequest(HttpServerRequest serverRequest) {
+    private void handleRequest(HttpServerRequest serverRequest) {
         ByteArrayOutputStream received = new ByteArrayOutputStream();
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
         RequestContext context = new RequestContext(serverRequest, getClockTime());
 
         try {
-        	URL backendUrl = getBackendUrl(context);
+            URL backendUrl = getBackendUrl(context);
             HttpClientRequest clientRequest = createClientRequest(serverRequest, backendUrl)
-            		.handler(responseHandler(context, sent, received, backendUrl))
-            		.exceptionHandler(responseExceptionHandler(context, backendUrl, sent, received))
-            		.setChunked(true);
+                    .handler(responseHandler(context, sent, received, backendUrl))
+                    .exceptionHandler(responseExceptionHandler(context, backendUrl, sent, received))
+                    .setChunked(true);
 
             clientRequest.headers().setAll(serverRequest.headers());
             serverRequest.handler(data -> {
@@ -93,80 +95,80 @@ public class ProxyService extends AbstractVerticle {
             logger.warn(e.getMessage(), e);
             serverRequest.response().close();
             actionService.log(
-            		RequestDataEntry.fromContext(context, e),
-            		ResponseEntry.empty(null, getClockTime()));
+                    RequestDataEntry.fromContext(context, e),
+                    ResponseEntry.empty(null, getClockTime()));
         }
     }
 
-	private HttpClientRequest createClientRequest(HttpServerRequest serverRequest, URL backendUrl) {
-		return proxyClients.getByScheme(backendUrl.getProtocol())
-				.request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri());
-	}
+    private HttpClientRequest createClientRequest(HttpServerRequest serverRequest, URL backendUrl) {
+        return proxyClients.getByScheme(backendUrl.getProtocol())
+                .request(serverRequest.method(), getPort(backendUrl), backendUrl.getHost(), serverRequest.uri());
+    }
 
-	private int getPort(URL backendUrl) {
-		int port = backendUrl.getPort();
-		return port != -1 ? port : backendUrl.getDefaultPort();
-	}
+    private int getPort(URL backendUrl) {
+        int port = backendUrl.getPort();
+        return port != -1 ? port : backendUrl.getDefaultPort();
+    }
 
-	private URL getBackendUrl(RequestContext context) {
-		return createURL(proxyProperties.getMappings().stream()
-		        .filter(ProxyProperties.Mapping::isActive)
-		        .filter(mapping -> mapping.getPattern().matcher(context.getRequestPath()).matches())
-		        .map(mapping -> mapping.getUrl() + context.getRequestPathWithQuery())
-		        .findFirst()
-		        .orElseThrow(() -> new NoMappingException(context.getRequestPath())));
-	}
+    private URL getBackendUrl(RequestContext context) {
+        return createURL(proxyProperties.getMappings().stream()
+                .filter(ProxyProperties.Mapping::isActive)
+                .filter(mapping -> mapping.getPattern().matcher(context.getRequestPath()).matches())
+                .map(mapping -> mapping.getUrl() + context.getRequestPathWithQuery())
+                .findFirst()
+                .orElseThrow(() -> new NoMappingException(context.getRequestPath())));
+    }
 
-	private Handler<Throwable> responseExceptionHandler(RequestContext context, URL backendUrl, ByteArrayOutputStream sent, ByteArrayOutputStream received) {
-		return throwable -> {
+    private Handler<Throwable> responseExceptionHandler(RequestContext context, URL backendUrl, ByteArrayOutputStream sent, ByteArrayOutputStream received) {
+        return throwable -> {
             actionService.log(
-            		RequestDataEntry.fromContext(context, sent),
-            		new ResponseExceptionEntry(backendUrl, throwable, getClockTime())
+                    RequestDataEntry.fromContext(context, sent),
+                    new ResponseExceptionEntry(backendUrl, throwable, getClockTime())
             );
             context.getResponse().close();
          };
-	}
+    }
 
-	private Handler<HttpClientResponse> responseHandler(RequestContext context, ByteArrayOutputStream sent, ByteArrayOutputStream received, URL backendUrl) {
-		return clientResponse -> {
+    private Handler<HttpClientResponse> responseHandler(RequestContext context, ByteArrayOutputStream sent, ByteArrayOutputStream received, URL backendUrl) {
+        return clientResponse -> {
             HttpServerResponse serverResponse = context.getResponse()
-            		.setChunked(true)
-            		.setStatusCode(clientResponse.statusCode());
+                    .setChunked(true)
+                    .setStatusCode(clientResponse.statusCode());
             serverResponse.headers().setAll(clientResponse.headers());
             clientResponse.handler(data -> {
-				write(received, data);
-				serverResponse.write(data);
+                write(received, data);
+                serverResponse.write(data);
             }).exceptionHandler(throwable -> {
-				actionService.log(
-						RequestDataEntry.fromContext(context, sent),
-						new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
-				serverResponse.close();
+                actionService.log(
+                        RequestDataEntry.fromContext(context, sent),
+                        new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
+                serverResponse.close();
             }).endHandler(v -> {
-				actionService.log(
-						RequestDataEntry.fromContext(context, sent),
-						new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader(HttpHeaders.CONTENT_TYPE), backendUrl, parseHeaders(clientResponse.headers()), received.toByteArray(), getClockTime()));
-				serverResponse.end();
+                actionService.log(
+                        RequestDataEntry.fromContext(context, sent),
+                        new ResponseDataEntry(clientResponse.statusCode(), clientResponse.getHeader(HttpHeaders.CONTENT_TYPE), backendUrl, parseHeaders(clientResponse.headers()), received.toByteArray(), getClockTime()));
+                serverResponse.end();
             });
          };
-	}
+    }
 
-	static Map<String, List<String>> parseHeaders(MultiMap headers) {
-		return headers.entries().stream().collect(
-				groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
-	}
+    static Map<String, List<String>> parseHeaders(MultiMap headers) {
+        return headers.entries().stream().collect(
+                groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+    }
 
-	private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
-		return result -> {
-			String name = server.getName();
-			String host = server.getHost();
-			int port = server.getPort();
-			if (result.succeeded()) {
-			    logger.info("Proxy server '{}' listening on {}:{}", name, host, port);
-			} else {
-				logger.error("Unable to start '{}' proxy server on {}:{}", name, host, port, result.cause());
-			}
-		};
-	}
+    private Handler<AsyncResult<HttpServer>> listenHandlerForServer(Binding server) {
+        return result -> {
+            String name = server.getName();
+            String host = server.getHost();
+            int port = server.getPort();
+            if (result.succeeded()) {
+                logger.info("Proxy server '{}' listening on {}:{}", name, host, port);
+            } else {
+                logger.error("Unable to start '{}' proxy server on {}:{}", name, host, port, result.cause());
+            }
+        };
+    }
 
     private LocalDateTime getClockTime() {
         return LocalDateTime.ofInstant(clock.instant(), clock.getZone());

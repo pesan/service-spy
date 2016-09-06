@@ -37,9 +37,9 @@ public class HttpServerBindings {
             return server;
         }
 
-		public String getHost() {
-			return host;
-		}
+        public String getHost() {
+            return host;
+        }
 
         public int getPort() {
             return port;

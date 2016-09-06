@@ -28,18 +28,18 @@ public class ConfigController {
 
     @RequestMapping(method=RequestMethod.PUT)
     public Observable<HttpStatus> put(@RequestBody ProxyProperties newConfig) {
-    	return get()
-    			.map(config -> {
-        			boolean valid = newConfig.getMappings().stream().allMatch(mapping -> {
-        				return mapping.getUrl().startsWith("http:") || mapping.getUrl().startsWith("https:");
-        			});
+        return get()
+                .map(config -> {
+                    boolean valid = newConfig.getMappings().stream().allMatch(mapping -> {
+                        return mapping.getUrl().startsWith("http:") || mapping.getUrl().startsWith("https:");
+                    });
 
-        			if (!valid) {
-        				return HttpStatus.BAD_REQUEST;
-        			}
-        			config.getMappings().clear();
-        			config.getMappings().addAll(newConfig.getMappings());
-        			return HttpStatus.NO_CONTENT;
-    			});
+                    if (!valid) {
+                        return HttpStatus.BAD_REQUEST;
+                    }
+                    config.getMappings().clear();
+                    config.getMappings().addAll(newConfig.getMappings());
+                    return HttpStatus.NO_CONTENT;
+                });
     }
 }
