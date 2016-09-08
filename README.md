@@ -52,8 +52,9 @@ The can also be listed in an `application.yml` file mounted into the root of the
 Example of config file:
 
     actions.limit: 200
-    proxy.mappings[0].url: http://www.example.com
-
+    proxy.mappings:
+      - url: http://www.example.com
+        pattern: /.*
 
 **Example.** How to configure TLS certificate:
 
