@@ -1,5 +1,7 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
+import static java.util.Collections.singletonList;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -12,6 +14,7 @@ public class RequestDataEntry implements RequestEntry {
     private final String requestPath;
     private final String requestPathWithQuery;
     private final String httpMethod;
+    private final String contentType;
     private final Map<String, List<String>> headers;
     private final LocalDateTime time;
     private final Exception exception;
@@ -30,6 +33,7 @@ public class RequestDataEntry implements RequestEntry {
         this.requestPath = requestUri.getPath();
         this.requestPathWithQuery = requestUri.getPath() + (requestUri.getQuery() != null ? "?" + requestUri.getQuery() : "");
         this.httpMethod = httpMethod;
+        this.contentType = headers.getOrDefault("Content-Type", singletonList("")).get(0);
         this.headers = headers;
         this.data = data;
         this.time = time;
@@ -57,13 +61,16 @@ public class RequestDataEntry implements RequestEntry {
     }
 
     @Override
+    public LocalDateTime getTime() {
+        return time;
+    }
+
     public byte[] getData() {
         return data.toByteArray();
     }
 
-    @Override
-    public LocalDateTime getTime() {
-        return time;
+    public String getContentType() {
+        return contentType;
     }
 
     public Exception getException() {

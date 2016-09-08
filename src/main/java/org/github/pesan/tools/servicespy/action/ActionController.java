@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
-import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
+import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,11 +46,13 @@ public class ActionController {
     }
 
     @RequestMapping(value="/{id}/data/request/", method=GET)
-    public Observable<byte[]> requestData(@PathVariable("id") String id) {
+    public Observable<ResponseEntity<byte[]>> requestData(@PathVariable("id") String id) {
         return actionService.list()
                 .filter(entry -> entry.getId().equals(id))
                 .map(LogEntry::getRequest)
-                .map(RequestEntry::getData);
+                .filter(RequestDataEntry.class::isInstance)
+                .cast(RequestDataEntry.class)
+                .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), HttpStatus.OK));
     }
 
     @RequestMapping(value="/{id}/data/response/", method=GET)

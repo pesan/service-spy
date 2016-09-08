@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -36,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+
+import com.jayway.restassured.http.ContentType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebIntegrationTest({"server.port=0", "proxy.servers.http.port=65080", "proxy.servers.https.port=65443"})
@@ -72,6 +76,20 @@ public class ProxyTest {
     }
 
     @Test
+    public void shouldReturnDataAndContentTypeWhenFetchingResponseData() throws IOException {
+
+        rest.getForObject("http://localhost:65080/test/entity", Object.class);
+
+        given()
+        .when()
+           .get("/api/actions/87ed7de7-d115-488a-b68a-a903ad308753/data/response/")
+        .then()
+            .body(equalTo("{\"data\":\"entity\"}"))
+            .contentType(ContentType.JSON)
+            .statusCode(200);
+    }
+
+    @Test
     public void shouldHaveActionDataWhenThereIsOneAction() throws IOException {
         rest.postForObject("http://localhost:65080/test/entity?withQuery", singletonMap("id", "10993"), Object.class);
 
@@ -84,6 +102,7 @@ public class ProxyTest {
             .body("[0].request.requestPath", equalTo("/test/entity"))
             .body("[0].request.requestPathWithQuery", equalTo("/test/entity?withQuery"))
             .body("[0].request.httpMethod", equalTo("POST"))
+            .body("[0].request.contentType", equalTo("application/json;charset=UTF-8"))
             .body("[0].request.data", equalTo(toBase64("{\"id\":\"10993\"}")))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
             .body("[0].response.status", equalTo(201))
@@ -93,6 +112,8 @@ public class ProxyTest {
             .body("[0].response.hostName", equalTo("localhost"))
             .body("[0].response.data", equalTo(toBase64("{\"data\":\"entity\"}")))
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
+            .body("[0].href.requestData", equalTo("/api/actions/87ed7de7-d115-488a-b68a-a903ad308753/data/request/"))
+            .body("[0].href.responseData", equalTo("/api/actions/87ed7de7-d115-488a-b68a-a903ad308753/data/response/"))
             .statusCode(200);
     }
 
@@ -151,10 +172,8 @@ public class ProxyTest {
             .statusCode(200);
     }
 
-
     @Test
     public void shouldRespondWhenMakingRequestToHttpsEndpoint() throws IOException {
-        proxyProperties.getMappings().get(0).setUrl("http://localhost:" + port);
 
         rest.getForObject("https://localhost:65443/test/entity", Object.class);
 
@@ -191,8 +210,13 @@ public class ProxyTest {
 
 @RestController
 class TestController {
-    @RequestMapping(value="/test/entity", produces="application/json")
-    public ResponseEntity<Map<String, String>> entity() {
+    @RequestMapping(value="/test/entity", produces="application/json", method=GET)
+    public ResponseEntity<Map<String, String>> getEntity() {
+        return new ResponseEntity<>(singletonMap("data", "entity"), HttpStatus.OK);
+    }
+
+    @RequestMapping(value="/test/entity", produces="application/json", consumes="application/json", method=POST)
+    public ResponseEntity<Map<String, String>> addEntity(Map<String, String> entity) {
         return new ResponseEntity<>(singletonMap("data", "entity"), HttpStatus.CREATED);
     }
 }

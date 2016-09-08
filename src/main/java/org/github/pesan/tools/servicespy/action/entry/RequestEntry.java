@@ -9,6 +9,5 @@ public interface RequestEntry {
     String getRequestPathWithQuery();
     String getHttpMethod();
     Map<String, List<String>> getHeaders();
-    byte[] getData();
     LocalDateTime getTime();
 }
