@@ -1,5 +1,7 @@
 package org.github.pesan.tools.servicespy.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class ProxyServer {
     private String host = "0.0.0.0";
     private int port = -1;
@@ -20,21 +22,27 @@ public class ProxyServer {
     public boolean getSsl() { return ssl; }
     public void setSsl(boolean ssl) { this.ssl = ssl; }
 
+    @JsonIgnore
     public String getJksKeystore() { return jksKeystore; }
     public void setJksKeystore(String jksKeystore) { this.jksKeystore = jksKeystore; }
 
+    @JsonIgnore
     public String getJksPassword() { return jksPassword; }
     public void setJksPassword(String jksPassword) { this.jksPassword = jksPassword; }
 
+    @JsonIgnore
     public String getPfxKeystore() { return pfxKeystore; }
     public void setPfxKeystore(String pfxKeystore) { this.pfxKeystore = pfxKeystore; }
 
+    @JsonIgnore
     public String getPfxPassword() { return pfxPassword; }
     public void setPfxPassword(String pfxPassword) { this.pfxPassword = pfxPassword; }
 
+    @JsonIgnore
     public String getPemKeyPath() { return pemKeyPath; }
     public void setPemKeyPath(String pemKeyPath) { this.pemKeyPath = pemKeyPath; }
 
+    @JsonIgnore
     public String getPemCertPath() { return pemCertPath; }
     public void setPemCertPath(String pemCertPath) { this.pemCertPath = pemCertPath; }
 }
