@@ -1,11 +1,12 @@
 'use strict';
 
 angular.module('tools.servicespy.action', ['api'])
-.controller('ActionController', function($scope, $state, ActionService, entryState, filter, canStream) {
+.controller('ActionController', function($scope, $state, ActionService, entryState, filter, canStream, contentViews) {
     $scope.state = entryState;
     $scope.requestLogs = entryState.entries;
     $scope.filter = filter;
     $scope.canStream = canStream;
+    $scope.contentViews = contentViews;
 
     $scope.deleteAll = function() {
         while (entryState.entries.length) {
@@ -28,15 +29,15 @@ angular.module('tools.servicespy.action', ['api'])
     };
 
     $scope.isOkStatus = function(entry) {
-        return parseInt(entry.response.status/100) <= 2;
+        return entry.response.status < 300;
     };
 
     $scope.isRedirectStatus = function(entry) {
-        return parseInt(entry.response.status/100) === 3;
+        return entry.response.status >= 300 && entry.response.status < 400
     };
 
     $scope.isErrorStatus = function(entry) {
-        return parseInt(entry.response.status/100) >= 4;
+        return entry.response.status >= 400;
     };
 })
 .factory('ActionService', function($api) {
@@ -69,25 +70,51 @@ angular.module('tools.servicespy.action', ['api'])
             '</ul>'
     };
 })
-.directive('dataview', function($compile) {
-    var contentViews = [
-        { pattern: /image\/.*/, template: '<img class="dataview" ng-src="{{ model.href }}">' },
-        { pattern: /application\/.*xml.*/, template: '<pre class="dataview">{{ model.data | xml }}</pre>' },
-        { pattern: /application\/json/, template: '<pre class="dataview">{{ model.data | json }}</pre>' },
-        { pattern: /text\/.*/, template: '<pre class="dataview">{{ model.data }}</pre>' },
-        { pattern: /.*/, template: '<pre class="dataview">{{ model.data | hex }}</pre>' }
+.factory('contentViews', function() {
+    return [
+        {
+            name: 'Image',
+            pattern: /image\/.*/,
+            template: '<img class="dataview" ng-src="{{ model.href }}">'
+        },
+        {
+            name: 'XML',
+            pattern: /application\/.*xml.*/,
+            template: '<pre class="dataview">{{ model.data | pretty:\'xml\' }}</pre>'
+        },
+        {
+            name: 'JSON',
+            pattern: /application\/json/,
+            template: '<pre class="dataview">{{ model.data | pretty:\'json\'}}</pre>'
+        },
+        {
+            name: 'CSS',
+            pattern: /text\/css.*/,
+            template: '<pre class="dataview">{{ model.data | pretty:\'css\' }}</pre>'
+        },
+        {
+            name: 'Plain text',
+            pattern: /application\/javascript.*|text\/.*/,
+            template: '<pre class="dataview">{{ model.data }}</pre>'
+        },
+        {
+            name: 'Binary',
+            pattern: /.*/,
+            template: '<pre class="dataview">{{ model.data | hex }}</pre>'
+        }
     ];
+})
+.directive('dataview', function($compile, $timeout, contentViews) {
     return {
         restrict: 'E',
         scope: {
             model: '='
         },
         link: function(scope, element) {
-            var contentType = (scope.model.contentType || '').replace(/;.*/, '');
-            var view = _.find(contentViews, function(view) {
-                return view.pattern.test(contentType);
+            scope.$watch('model.view', function(next, current) {
+                element.empty();
+                element.append($compile(scope.model.view.template)(scope));
             });
-            element.replaceWith($compile(view.template)(scope));
         }
     };
 })
@@ -113,6 +140,7 @@ angular.module('tools.servicespy.action', ['api'])
         scope: {
             id: '@',
             name: '@',
+            contentViews: '=',
             entry: '=',
             model: '='
         },
@@ -139,6 +167,15 @@ angular.module('tools.servicespy.action', ['api'])
             '           <exception class="dataview" value="model.exception"></exception>' +
             '       </div>' +
             '       <div class="tab-pane" ng-class="{active: !model.exception}" id="{{ id }}-data-{{ entry.id }}" role="tabpanel">' +
+            '           <div class="dropdown open">' +
+            '               <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+            '                   {{ model.view.name }}' +
+            '               </button>' +
+            '               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">' +
+            '                   <button ng-repeat="view in contentViews" ng-click="model.view = view" class="dropdown-item">{{ view.name }}</a>' +
+            '               </div>' +
+            '           </div>' +
+            '           <hr/>' +
             '           <dataview model="model"></dataview>' +
             '       </div>' +
             '       <div class="tab-pane" id="{{ id }}-headers-{{ entry.id }}" role="tabpanel">' +
@@ -155,14 +192,13 @@ angular.module('tools.servicespy.action', ['api'])
             '</div>'
     };
 })
-.filter('xml', function() {
-    return function(text, level) {
-        return _.isEmpty(text) ? '' : vkbeautify.xml(text, level || 2);
-    };
-})
-.filter('json', function() {
-    return function(text, level) {
-        return _.isEmpty(text) ? '' : angular.toJson(angular.fromJson(text), level || 2);
+.filter('pretty', function() {
+    return function(text, type, level) {
+        try {
+            return _.isEmpty(text) ? '' : vkbeautify[type](text, level || 2);
+        } catch (e) {
+            return text;
+        }
     };
 })
 .filter('hex', function() {

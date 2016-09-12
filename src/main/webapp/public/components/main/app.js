@@ -38,7 +38,7 @@ angular.module('tools.servicespy', [
                 stream: function($stateParams, canStream) {
                     return canStream && $stateParams.stream === 'true';
                 },
-                entryState: function(ActionService, show, $timeout, stream, Toast) {
+                entryState: function(ActionService, show, $timeout, stream, Toast, contentViews) {
                     var state = {
                         active: stream,
                         entries: []
@@ -48,11 +48,19 @@ angular.module('tools.servicespy', [
                             state.entries.pop();
                         }
                     };
+                    var viewFromContentType = function(contentType) {
+                        contentType = (contentType || '').replace(/;.*/, '');
+                        return _.find(contentViews, function(view) {
+                            return view.pattern.test(contentType);
+                        });
+                    };
                     var handleEntry = function(entry) {
                         if (_.some(state.entries, 'id', entry.id)) {
                             clearEntries();
                         }
                         entry.expanded = show;
+                        entry.request.view = viewFromContentType(entry.request.contentType);
+                        entry.response.view = viewFromContentType(entry.response.contentType);
                         entry.request.data = atob(entry.request.data);
                         entry.response.data = atob(entry.response.data || '');
                         entry.request.href = entry.href.requestData;
