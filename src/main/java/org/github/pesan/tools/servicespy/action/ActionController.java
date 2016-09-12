@@ -35,14 +35,32 @@ public class ActionController {
         this.timeout = timeout;
     }
 
-    @RequestMapping(method=GET)
+    @RequestMapping(method=DELETE)
+    public Observable<HttpStatus> reset() {
+        return actionService.clear().map(x -> HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(method=GET, produces="application/json")
     public Observable<List<LogEntry>> list() {
         return actionService.list().toList();
     }
 
-    @RequestMapping(method=DELETE)
-    public Observable<HttpStatus> reset() {
-        return actionService.clear().map(x -> HttpStatus.NO_CONTENT);
+    @RequestMapping(method=GET, produces="text/event-stream")
+    public SseEmitter streamList() throws IOException {
+        SseEmitter sseEmitter = new SseEmitter(timeout);
+        actionService.streamList()
+                .subscribe(
+                        logEntry -> {
+                            try {
+                                sseEmitter.send(logEntry, MediaType.APPLICATION_JSON);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        sseEmitter::completeWithError,
+                        sseEmitter::complete
+                );
+        return sseEmitter;
     }
 
     @RequestMapping(value="/{id}/data/request/", method=GET)
@@ -63,24 +81,6 @@ public class ActionController {
                 .filter(ResponseDataEntry.class::isInstance)
                 .cast(ResponseDataEntry.class)
                 .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), HttpStatus.OK));
-    }
-
-    @RequestMapping(value="/stream", method=GET, produces="text/event-stream")
-    public SseEmitter streamList() throws IOException {
-        SseEmitter sseEmitter = new SseEmitter(timeout);
-        actionService.streamList()
-                .subscribe(
-                        logEntry -> {
-                            try {
-                                sseEmitter.send(logEntry, MediaType.APPLICATION_JSON);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        sseEmitter::completeWithError,
-                        sseEmitter::complete
-                );
-        return sseEmitter;
     }
 
     private HttpHeaders contentType(String contentType) {

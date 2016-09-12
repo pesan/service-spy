@@ -43,7 +43,7 @@ angular.module('tools.servicespy.action', ['api'])
 .factory('ActionService', function($api) {
     return {
         fetch: function() { return $api.get('/api/actions'); },
-        listen: function(onClose) { return $api.stream('/api/actions/stream', onClose); }
+        listen: function(onClose) { return $api.stream('/api/actions', onClose); }
     };
 })
 .directive('icon', function() {
