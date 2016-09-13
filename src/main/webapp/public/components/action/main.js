@@ -167,11 +167,11 @@ angular.module('tools.servicespy.action', ['api'])
             '           <exception class="dataview" value="model.exception"></exception>' +
             '       </div>' +
             '       <div class="tab-pane" ng-class="{active: !model.exception}" id="{{ id }}-data-{{ entry.id }}" role="tabpanel">' +
-            '           <div class="dropdown open">' +
-            '               <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+            '           <div class="dropdown">' +
+            '               <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton-{{ id }}-{{ entry.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
             '                   {{ model.view.name }}' +
             '               </button>' +
-            '               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">' +
+            '               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ id }}-{{ entry.id }}">' +
             '                   <button ng-repeat="view in contentViews" ng-click="model.view = view" class="dropdown-item">{{ view.name }}</a>' +
             '               </div>' +
             '           </div>' +
