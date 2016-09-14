@@ -12,7 +12,7 @@ import org.github.pesan.tools.servicespy.proxy.RequestContext;
 
 public class RequestDataEntry implements RequestEntry {
     private final String requestPath;
-    private final String requestPathWithQuery;
+    private final String query;
     private final String httpMethod;
     private final String contentType;
     private final Map<String, List<String>> headers;
@@ -31,7 +31,7 @@ public class RequestDataEntry implements RequestEntry {
 
     public RequestDataEntry(URI requestUri, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time, Exception exception) {
         this.requestPath = requestUri.getPath();
-        this.requestPathWithQuery = requestUri.getPath() + (requestUri.getQuery() != null ? "?" + requestUri.getQuery() : "");
+        this.query = requestUri.getQuery() != null ? "?" + requestUri.getQuery() : "";
         this.httpMethod = httpMethod;
         this.contentType = headers.getOrDefault("Content-Type", singletonList("")).get(0);
         this.headers = headers;
@@ -46,8 +46,8 @@ public class RequestDataEntry implements RequestEntry {
     }
 
     @Override
-    public String getRequestPathWithQuery() {
-        return requestPathWithQuery;
+    public String getQuery() {
+        return query;
     }
 
     @Override

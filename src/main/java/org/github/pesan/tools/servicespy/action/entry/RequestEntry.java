@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface RequestEntry {
     String getRequestPath();
-    String getRequestPathWithQuery();
+    String getQuery();
     String getHttpMethod();
     Map<String, List<String>> getHeaders();
     LocalDateTime getTime();

@@ -53,8 +53,8 @@
             Exception
         </span>
         <a class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.response.host})">{{ entry.response.host }}</a>
-        <a title="{{ entry.httpMethod }} {{ entry.requestPathWithQuery }}" class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.request.requestPath})">
-            {{ entry.request.httpMethod }} {{ entry.request.requestPath }}
+        <a ng-mouseleave="entry.showQuery=false" ng-mouseenter="entry.showQuery=true" class="monospace tag tag-default" ui-sref-active="tag-primary" ui-sref="actions({filter:entry.request.requestPath})">
+            {{ entry.request.httpMethod }} {{ entry.request.requestPath }}<span ng-class="{query: !entry.showQuery}">{{ entry.showQuery || !entry.request.query ? entry.request.query : '?...' }}</span>
         </a>
         <span class="btn-group btn-group-sm pull-xs-right">
             <a ui-sref="actions({filter:entry.id, show:true, stream:false})" class="btn btn-info" title="Show only this entry" target="_blank">

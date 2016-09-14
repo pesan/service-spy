@@ -59,6 +59,10 @@ h2 {
     box-shadow: 4px 4px 13px 0 rgba(0,0,0,0.5);
 }
 
+.query {
+    color: #b9b9bf;
+}
+
 .card {
     transition: .6s linear border-color;
 }

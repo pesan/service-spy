@@ -91,7 +91,7 @@ public class ProxyTest {
 
     @Test
     public void shouldHaveActionDataWhenThereIsOneAction() throws IOException {
-        rest.postForObject("http://localhost:65080/test/entity?withQuery", singletonMap("id", "10993"), Object.class);
+        rest.postForObject("http://localhost:65080/test/entity?withQuery&page=1", singletonMap("id", "10993"), Object.class);
 
         given()
         .when()
@@ -100,7 +100,7 @@ public class ProxyTest {
             .body("[0].id", equalTo("87ed7de7-d115-488a-b68a-a903ad308753"))
             .body("[0].responseTimeMillis", equalTo(74))
             .body("[0].request.requestPath", equalTo("/test/entity"))
-            .body("[0].request.requestPathWithQuery", equalTo("/test/entity?withQuery"))
+            .body("[0].request.query", equalTo("?withQuery&page=1"))
             .body("[0].request.httpMethod", equalTo("POST"))
             .body("[0].request.contentType", equalTo("application/json;charset=UTF-8"))
             .body("[0].request.data", equalTo(toBase64("{\"id\":\"10993\"}")))
@@ -134,7 +134,7 @@ public class ProxyTest {
             .body("[0].id", equalTo("87ed7de7-d115-488a-b68a-a903ad308753"))
             .body("[0].responseTimeMillis", equalTo(74))
             .body("[0].request.requestPath", equalTo("/nomatch"))
-            .body("[0].request.requestPathWithQuery", equalTo("/nomatch"))
+            .body("[0].request.query", equalTo(""))
             .body("[0].request.httpMethod", equalTo("GET"))
             .body("[0].request.data", equalTo(""))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
@@ -160,7 +160,7 @@ public class ProxyTest {
             .body("[0].id", equalTo("87ed7de7-d115-488a-b68a-a903ad308753"))
             .body("[0].responseTimeMillis", equalTo(74))
             .body("[0].request.requestPath", equalTo("/invalid"))
-            .body("[0].request.requestPathWithQuery", equalTo("/invalid"))
+            .body("[0].request.query", equalTo(""))
             .body("[0].request.httpMethod", equalTo("GET"))
             .body("[0].request.data", equalTo(""))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
