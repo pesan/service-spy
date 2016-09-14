@@ -5,7 +5,7 @@
 
 	<groupId>org.github.pesan</groupId>
 	<artifactId>service-spy</artifactId>
-	<version>1.9-SNAPSHOT</version>
+	<version>1.8.2</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
