@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.5.RELEASE</version>
+		<version>1.4.0.RELEASE</version>
 	</parent>
 
 	<properties>
@@ -34,7 +34,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<start-class>org.github.pesan.tools.servicespy.Application</start-class>
-		<rxjava.version>1.1.0</rxjava.version>
+		<rxjava.version>1.1.10</rxjava.version>
 	</properties>
 
 	<build>
@@ -141,12 +141,6 @@
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
 			<version>${jackson.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -232,6 +226,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>

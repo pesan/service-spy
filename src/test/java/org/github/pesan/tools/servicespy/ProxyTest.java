@@ -106,7 +106,7 @@ public class ProxyTest {
             .body("[0].request.data", equalTo(toBase64("{\"id\":\"10993\"}")))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
             .body("[0].response.status", equalTo(201))
-            .body("[0].response.contentType", equalTo("application/json; charset=UTF-8"))
+            .body("[0].response.contentType", equalTo("application/json;charset=UTF-8"))
             .body("[0].response.host", equalTo("localhost:" + port))
             .body("[0].response.port", equalTo(port))
             .body("[0].response.hostName", equalTo("localhost"))
