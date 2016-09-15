@@ -29,8 +29,11 @@ The application accepts the configuration properties listed below:
     actions.limit                        200                    The number of actions to keep in memory
     stream.timeout                       864000000              Stream connection timeout (milliseconds)
 
-    proxy.mappings[0].url                http://localhost:8080  The first proxied URL (shown under Config)
-    proxy.mappings[0].pattern            /.*                    The first regexp path pattern
+    default.url                          http://localhost:8080  Default URL value
+    default.pattern                      /.*                    Default pattern value
+
+    proxy.mappings[0].url                ${default.url}         The first proxied URL (shown under Config)
+    proxy.mappings[0].pattern            ${default.pattern}     The first regexp path pattern
 
     proxy.servers.http.port              9000                   HTTP proxy port number
     proxy.servers.https.port             9443                   HTTPS proxy port number
@@ -46,15 +49,17 @@ The application accepts the configuration properties listed below:
 
 These properties can be applied on the command line with a double dash, for example:
 
-    docker run -d pesan/service-spy --actions.limit=150
+    docker run -d pesan/service-spy --actions.limit=150 --default.url=https://example.com
 
 The can also be listed in an `application.yml` file mounted into the root of the container.
 Example of config file:
 
     actions.limit: 200
     proxy.mappings:
-      - url: http://www.example.com
-        pattern: /.*
+      - url: http://test1.example.com
+        pattern: /test1/.*
+      - url: http://test2.example.com
+        pattern: /test2/.*
 
 **Example.** How to configure TLS certificate:
 

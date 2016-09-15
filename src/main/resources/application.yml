@@ -10,5 +10,5 @@ proxy:
       ssl: true
       port: "9443"
   mappings:
-   - pattern: /.*
-     url: http://localhost:8080
+   - pattern: ${default.pattern:/.*}
+     url: ${default.url:http://localhost:8080}
