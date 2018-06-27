@@ -1,22 +1,23 @@
 package org.github.pesan.tools.servicespy.action;
 
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import rx.Observable;
 
-import java.io.IOException;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -24,60 +25,47 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @RequestMapping("/api/actions")
 public class ActionController {
     private final ActionService actionService;
-    private final long timeout;
 
-    public ActionController(ActionService actionService,
-            @Value("${stream.timeout:86400000}") long timeout) {
+    public ActionController(ActionService actionService) {
         this.actionService = actionService;
-        this.timeout = timeout;
     }
 
     @RequestMapping(method=DELETE)
-    public Observable<HttpStatus> reset() {
-        return actionService.clear().map(x -> HttpStatus.NO_CONTENT);
+    @ResponseStatus(NO_CONTENT)
+    public Completable reset() {
+        return actionService.clear();
     }
 
     @RequestMapping(method=GET, produces="application/json")
-    public Observable<List<LogEntry>> list() {
+    public Single<List<LogEntry>> list() {
         return actionService.list().toList();
     }
 
     @RequestMapping(method=GET, produces="text/event-stream")
-    public SseEmitter streamList() {
-        SseEmitter sseEmitter = new SseEmitter(timeout);
-        actionService.streamList()
-                .subscribe(
-                        logEntry -> {
-                            try {
-                                sseEmitter.send(logEntry, MediaType.APPLICATION_JSON);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        sseEmitter::completeWithError,
-                        sseEmitter::complete
-                );
-        return sseEmitter;
+    public Observable<LogEntry> streamList() {
+        return actionService.streamList();
     }
 
     @RequestMapping(value="/{id}/data/request/", method=GET)
-    public Observable<ResponseEntity<byte[]>> requestData(@PathVariable("id") String id) {
+    public Maybe<ResponseEntity<byte[]>> requestData(@PathVariable("id") String id) {
         return actionService.list()
                 .filter(entry -> entry.getId().equals(id))
+                .singleElement()
                 .map(LogEntry::getRequest)
                 .filter(RequestDataEntry.class::isInstance)
                 .cast(RequestDataEntry.class)
-                .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), HttpStatus.OK));
+                .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), OK));
     }
 
     @RequestMapping(value="/{id}/data/response/", method=GET)
-    public Observable<ResponseEntity<byte[]>> responseData(@PathVariable("id") String id) {
+    public Maybe<ResponseEntity<byte[]>> responseData(@PathVariable("id") String id) {
         return actionService.list()
                 .filter(entry -> entry.getId().equals(id))
+                .singleElement()
                 .map(LogEntry::getResponse)
                 .filter(ResponseDataEntry.class::isInstance)
                 .cast(ResponseDataEntry.class)
-                .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), HttpStatus.OK));
+                .map(entry -> new ResponseEntity<>(entry.getData(), contentType(entry.getContentType()), OK));
     }
 
     private HttpHeaders contentType(String contentType) {

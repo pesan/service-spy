@@ -27,7 +27,6 @@ The application accepts the configuration properties listed below:
     --------------------------------------------------------------------------------------------
     server.port                          9900                   Administrative interface port number
     actions.limit                        200                    The number of actions to keep in memory
-    stream.timeout                       864000000              Stream connection timeout (milliseconds)
 
     default.url                          http://localhost:8080  Default URL value
     default.pattern                      /.*                    Default pattern value

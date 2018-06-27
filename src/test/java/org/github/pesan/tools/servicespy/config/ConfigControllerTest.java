@@ -5,8 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -45,29 +46,37 @@ public class ConfigControllerTest {
         )));
     }
 
-    @Test
-    public void shouldReturnHttpNoContentWhenUpdatingProxyConfiguration() {
-        ProxyProperties proxyConfig = new ProxyProperties();
+    @Test(expected = ResponseStatusException.class)
+    public void shouldThrowBadRequestWhenReferencingUnknownProxyServer() {
+        ProxyProperties proxyConfig = createProxyConfig();
+        proxyConfig.getServers().computeIfAbsent("non-existing", __ -> new ProxyServer())
+                   .getMappings().add(httpMapping);
 
-        assertThat(
-            updateProxyConfig(proxyConfig),
-            equalTo(HttpStatus.NO_CONTENT)
-        );
+        try {
+            updateProxyConfig(proxyConfig);
+        } catch (ResponseStatusException e) {
+            assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+            assertThat(e.getReason(), equalTo("unknown proxy server: non-existing"));
+            throw e;
+        }
     }
 
-    @Test
-    public void shouldReturnHttpBadRequestWhenMappingUrlIsNotHttpOrHttps() {
+    @Test(expected = ResponseStatusException.class)
+    public void shouldThrowHttpBadRequestWhenMappingUrlIsNotHttpOrHttps() {
         ProxyProperties proxyConfig = createProxyConfig();
         proxyConfig.getServers().get("http").getMappings().add(ftpMapping);
 
-        assertThat(
-            updateProxyConfig(proxyConfig),
-            equalTo(HttpStatus.BAD_REQUEST)
-        );
+        try {
+            updateProxyConfig(proxyConfig);
+        } catch (ResponseStatusException e) {
+            assertThat(e.getStatus(), equalTo(HttpStatus.BAD_REQUEST));
+            assertThat(e.getReason(), equalTo("expected protocol from: http, https"));
+            throw e;
+        }
     }
 
-    private HttpStatus updateProxyConfig(ProxyProperties proxyConfig) {
-        return configController.put(proxyConfig).toBlocking().single();
+    private void updateProxyConfig(ProxyProperties proxyConfig) {
+        configController.put(proxyConfig).blockingAwait();
     }
 
     private ProxyProperties createProxyConfig() {
@@ -77,6 +86,6 @@ public class ConfigControllerTest {
     }
 
     private ProxyProperties getCurrentProxyConfig() {
-        return configController.get().toBlocking().single();
+        return configController.get().blockingGet();
     }
 }

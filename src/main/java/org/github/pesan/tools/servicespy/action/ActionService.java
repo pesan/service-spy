@@ -1,14 +1,16 @@
 package org.github.pesan.tools.servicespy.action;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.Subject;
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseEntry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import rx.Observable;
-import rx.subjects.ReplaySubject;
-import rx.subjects.SerializedSubject;
-import rx.subjects.Subject;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ActionService {
@@ -16,7 +18,7 @@ public class ActionService {
     private final RequestIdGenerator requestIdGenerator;
     private final int maxEntryCount;
 
-    private Subject<LogEntry, LogEntry> buffer;
+    private Subject<LogEntry> buffer;
     private ReplaySubject<LogEntry> replay;
 
     public ActionService(
@@ -29,11 +31,11 @@ public class ActionService {
 
     private void init() {
         replay = ReplaySubject.createWithSize(maxEntryCount);
-        buffer = new SerializedSubject<>(replay);
+        buffer = replay.toSerialized();
     }
 
     public Observable<LogEntry> list() {
-        return replay.take(replay.size());
+        return replay.take(1, TimeUnit.MILLISECONDS);
     }
 
     public Observable<LogEntry> streamList() {
@@ -44,8 +46,7 @@ public class ActionService {
         buffer.onNext(new LogEntry(requestIdGenerator.next(), requestEntry, responseEntry));
     }
 
-    public Observable<Boolean> clear() {
-        return Observable.just(true)
-                .doOnCompleted(this::init);
+    public Completable clear() {
+        return Completable.fromAction(this::init);
     }
 }

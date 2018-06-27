@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -122,6 +122,6 @@ public class ActionServiceTest {
     }
 
     private List<LogEntry> listActions() {
-        return actionService.list().toList().toBlocking().single();
+        return actionService.list().toList().blockingGet();
     }
 }
