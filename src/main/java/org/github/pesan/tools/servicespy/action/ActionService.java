@@ -3,7 +3,6 @@ package org.github.pesan.tools.servicespy.action;
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rx.Observable;
@@ -20,7 +19,6 @@ public class ActionService {
     private Subject<LogEntry, LogEntry> buffer;
     private ReplaySubject<LogEntry> replay;
 
-    @Autowired
     public ActionService(
             RequestIdGenerator requestIdGenerator,
             @Value("${actions.limit:200}") int maxEntryCount) {
@@ -29,7 +27,7 @@ public class ActionService {
         init();
     }
 
-    public void init() {
+    private void init() {
         replay = ReplaySubject.createWithSize(maxEntryCount);
         buffer = new SerializedSubject<>(replay);
     }

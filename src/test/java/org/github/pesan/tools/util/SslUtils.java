@@ -11,14 +11,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class SslUtils {
 
-    private static X509TrustManager TRUST_ANY = new X509TrustManager() {
-        @Override public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {}
-        @Override public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {}
+    private static final X509TrustManager TRUST_ANY = new X509TrustManager() {
+        @Override public void checkClientTrusted(X509Certificate[] xcs, String string) {}
+        @Override public void checkServerTrusted(X509Certificate[] xcs, String string) {}
         @Override public X509Certificate[] getAcceptedIssuers() { return null; }
     };
 

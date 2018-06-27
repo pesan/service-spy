@@ -97,7 +97,6 @@ public class ActionServiceTest {
 
         List<LogEntry> list = listActions();
 
-        list.stream().map(LogEntry::getId).collect(Collectors.toList());
         assertThat(pluck(list, LogEntry::getId), equalTo(asList(
             "222222-222222-22222",
             "333333-333333-33333",

@@ -1,7 +1,6 @@
 package org.github.pesan.tools.servicespy.proxy;
 
 import io.vertx.core.http.HttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +12,6 @@ public class HttpClientBindings {
 
     private final Map<String, HttpClient> clientsByScheme = new HashMap<>();
 
-    @Autowired
     public HttpClientBindings(HttpClient httpClient,
             @Qualifier("https") HttpClient httpsClient) {
         clientsByScheme.put("http", httpClient);

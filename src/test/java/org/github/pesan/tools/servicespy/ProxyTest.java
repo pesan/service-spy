@@ -1,5 +1,34 @@
 package org.github.pesan.tools.servicespy;
 
+import com.jayway.restassured.http.ContentType;
+import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
+import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
+import org.github.pesan.tools.util.SslUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+
+import java.nio.charset.Charset;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Base64;
+import java.util.Map;
+
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.port;
 import static java.util.Collections.singletonMap;
@@ -10,45 +39,20 @@ import static org.mockito.Mockito.when;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Base64;
-import java.util.Map;
-
-import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
-import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
-import org.github.pesan.tools.util.SslUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
-
-import com.jayway.restassured.http.ContentType;
-
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebIntegrationTest({"server.port=0", "proxy.servers.http.port=65080", "proxy.servers.https.port=65443"})
-@SpringApplicationConfiguration({Application.class, ProxyTest.TestConfiguration.class})
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "server.port=0",
+                "proxy.servers.http.port=65080",
+                "proxy.servers.https.port=65443"
+        }, classes = {Application.class, ProxyTest.TestConfiguration.class}
+)
 public class ProxyTest {
 
     private @Autowired ProxyProperties proxyProperties;
 
-    private static Clock clock = mock(Clock.class);
+    private static final Clock clock = mock(Clock.class);
 
     private final RestTemplate rest = SslUtils.trustAll(new RestTemplate());
 
@@ -78,7 +82,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void shouldReturnDataAndContentTypeWhenFetchingResponseData() throws IOException {
+    public void shouldReturnDataAndContentTypeWhenFetchingResponseData() {
 
         rest.getForObject("http://localhost:65080/test/entity", Object.class);
 
@@ -92,8 +96,8 @@ public class ProxyTest {
     }
 
     @Test
-    public void shouldHaveActionDataWhenThereIsOneAction() throws IOException {
-        rest.postForObject("http://localhost:65080/test/entity?withQuery&page=1", singletonMap("id", "10993"), Object.class);
+    public void shouldHaveActionDataWhenThereIsOneAction() {
+        rest.postForObject("http://localhost:65080/test/entity?withQuery&page=1", singletonMap("id", "10993"), Map.class);
 
         given()
         .when()
@@ -112,7 +116,7 @@ public class ProxyTest {
             .body("[0].response.host", equalTo("localhost:" + port))
             .body("[0].response.port", equalTo(port))
             .body("[0].response.hostName", equalTo("localhost"))
-            .body("[0].response.data", equalTo(toBase64("{\"data\":\"entity\"}")))
+            .body("[0].response.data", equalTo(toBase64("{\"data\":{\"id\":\"10993\"}}")))
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
             .body("[0].href.requestData", equalTo("/api/actions/87ed7de7-d115-488a-b68a-a903ad308753/data/request/"))
             .body("[0].href.responseData", equalTo("/api/actions/87ed7de7-d115-488a-b68a-a903ad308753/data/response/"))
@@ -120,7 +124,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void shouldProvideRequestExceptionWhenRequestProcessingFails() throws IOException {
+    public void shouldProvideRequestExceptionWhenRequestProcessingFails() {
         proxyProperties.getServers().get("http").getMappings().get(0).setPattern("$.");
 
         try {
@@ -146,7 +150,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void shouldProvideResponseExceptionWhenProxiedCallFails() throws IOException {
+    public void shouldProvideResponseExceptionWhenProxiedCallFails() {
         proxyProperties.getServers().get("http").getMappings().get(0).setUrl("http://localhost:0");
 
         try {
@@ -175,7 +179,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void shouldRespondWhenMakingRequestToHttpsEndpoint() throws IOException {
+    public void shouldRespondWhenMakingRequestToHttpsEndpoint() {
 
         rest.getForObject("https://localhost:65443/test/entity", Object.class);
 
@@ -218,8 +222,8 @@ class TestController {
     }
 
     @RequestMapping(value="/test/entity", produces="application/json", consumes="application/json", method=POST)
-    public ResponseEntity<Map<String, String>> addEntity(Map<String, String> entity) {
-        return new ResponseEntity<>(singletonMap("data", "entity"), HttpStatus.CREATED);
+    public ResponseEntity<Map<String, Map<String, String>>> addEntity(@RequestBody Map<String, String> entity) {
+        return new ResponseEntity<>(singletonMap("data", entity), HttpStatus.CREATED);
     }
 }
 

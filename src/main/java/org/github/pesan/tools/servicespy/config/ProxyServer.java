@@ -16,7 +16,7 @@ public class ProxyServer {
     private String pfxPassword;
     private String pemKeyPath;
     private String pemCertPath;
-    private List<Mapping> mappings = new ArrayList<>();
+    private final List<Mapping> mappings = new ArrayList<>();
 
     public String getHost() { return host; }
     public void setHost(String host) { this.host = host; }

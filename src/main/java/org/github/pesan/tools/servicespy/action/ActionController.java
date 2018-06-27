@@ -1,15 +1,8 @@
 package org.github.pesan.tools.servicespy.action;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-
-import java.io.IOException;
-import java.util.List;
-
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,8 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import rx.Observable;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/api/actions")
@@ -28,7 +26,6 @@ public class ActionController {
     private final ActionService actionService;
     private final long timeout;
 
-    @Autowired
     public ActionController(ActionService actionService,
             @Value("${stream.timeout:86400000}") long timeout) {
         this.actionService = actionService;
@@ -46,7 +43,7 @@ public class ActionController {
     }
 
     @RequestMapping(method=GET, produces="text/event-stream")
-    public SseEmitter streamList() throws IOException {
+    public SseEmitter streamList() {
         SseEmitter sseEmitter = new SseEmitter(timeout);
         actionService.streamList()
                 .subscribe(

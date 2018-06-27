@@ -1,6 +1,6 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
-import static java.util.Collections.singletonList;
+import org.github.pesan.tools.servicespy.proxy.RequestContext;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import org.github.pesan.tools.servicespy.proxy.RequestContext;
+import static java.util.Collections.singletonList;
 
 public class RequestDataEntry implements RequestEntry {
     private final String requestPath;

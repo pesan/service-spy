@@ -1,7 +1,5 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import static java.util.stream.Collectors.toList;
-import static org.springframework.util.FileCopyUtils.copyToByteArray;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -10,11 +8,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PfxOptions;
-
-import java.io.IOException;
-
 import org.github.pesan.tools.servicespy.config.ProxyServer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,10 +16,19 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.FileCopyUtils.copyToByteArray;
+
 @Configuration
 public class ProxyConfig {
 
-    private @Autowired ResourceLoader resourceLoader;
+    private final ResourceLoader resourceLoader;
+
+    public ProxyConfig(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
 
     @Bean
     public Vertx vertx() {
@@ -39,7 +42,7 @@ public class ProxyConfig {
                     ProxyServer server = serverSetting.getValue();
                     return new HttpServerBindings.Binding(
                             serverSetting.getKey(),
-                            vertx.createHttpServer(createServerOptions(vertx, server, proxyProperties)),
+                            vertx.createHttpServer(createServerOptions(server)),
                             server.getHost(),
                             server.getPort(),
                             server.getMappings()
@@ -48,7 +51,7 @@ public class ProxyConfig {
             .collect(toList()));
     }
 
-    private HttpServerOptions createServerOptions(Vertx vertx, ProxyServer value, ProxyProperties proxyProperties) {
+    private HttpServerOptions createServerOptions(ProxyServer value) {
         HttpServerOptions options = new HttpServerOptions()
             .setHost(value.getHost())
             .setPort(value.getPort())

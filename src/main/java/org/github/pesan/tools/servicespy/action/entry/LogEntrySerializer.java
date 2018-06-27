@@ -1,7 +1,6 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
@@ -10,7 +9,7 @@ import java.io.IOException;
 public class LogEntrySerializer extends JsonSerializer<LogEntry> {
 
     @Override
-    public void serialize(LogEntry entry, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+    public void serialize(LogEntry entry, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
 
         gen.writeStringField("id", entry.getId());

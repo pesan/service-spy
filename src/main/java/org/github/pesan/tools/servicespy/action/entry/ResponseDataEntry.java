@@ -1,11 +1,11 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = ResponseDataEntrySerializer.class)
 public class ResponseDataEntry implements ResponseEntry {

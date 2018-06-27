@@ -1,8 +1,5 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -15,19 +12,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
 import org.github.pesan.tools.servicespy.action.ActionService;
 import org.github.pesan.tools.servicespy.action.entry.NoMappingException;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
@@ -38,23 +22,41 @@ import org.github.pesan.tools.servicespy.config.ProxyServer;
 import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class ProxyService extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
 
-    private @Autowired Vertx vertx;
+    private final Vertx vertx;
+    private final ActionService actionService;
+    private final HttpClientBindings proxyClients;
+    private final HttpServerBindings proxyServers;
+    private final Clock clock;
 
-    private @Autowired ActionService actionService;
-    private @Autowired ProxyProperties proxyProperties;
-
-    private @Autowired HttpClientBindings proxyClients;
-    private @Autowired HttpServerBindings proxyServers;
-
-    private @Autowired Clock clock;
+    public ProxyService(Vertx vertx, ActionService actionService, HttpClientBindings proxyClients, HttpServerBindings proxyServers, Clock clock) {
+        this.vertx = vertx;
+        this.actionService = actionService;
+        this.proxyClients = proxyClients;
+        this.proxyServers = proxyServers;
+        this.clock = clock;
+    }
 
     @PostConstruct
     public void init() {
@@ -82,7 +84,7 @@ public class ProxyService extends AbstractVerticle {
             URL backendUrl = getBackendUrl(mappings, context);
             HttpClientRequest clientRequest = createClientRequest(serverRequest, backendUrl)
                     .handler(responseHandler(context, sent, received, backendUrl))
-                    .exceptionHandler(responseExceptionHandler(context, backendUrl, sent, received))
+                    .exceptionHandler(responseExceptionHandler(context, backendUrl, sent))
                     .setChunked(true);
 
             clientRequest.headers().setAll(serverRequest.headers());
@@ -120,7 +122,7 @@ public class ProxyService extends AbstractVerticle {
                 .orElseThrow(() -> new NoMappingException(context.getRequestPath())));
     }
 
-    private Handler<Throwable> responseExceptionHandler(RequestContext context, URL backendUrl, ByteArrayOutputStream sent, ByteArrayOutputStream received) {
+    private Handler<Throwable> responseExceptionHandler(RequestContext context, URL backendUrl, ByteArrayOutputStream sent) {
         return throwable -> {
             actionService.log(
                     RequestDataEntry.fromContext(context, sent),
@@ -153,7 +155,7 @@ public class ProxyService extends AbstractVerticle {
          };
     }
 
-    static Map<String, List<String>> parseHeaders(MultiMap headers) {
+    private static Map<String, List<String>> parseHeaders(MultiMap headers) {
         return headers.entries().stream().collect(
                 groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
     }
