@@ -45,24 +45,24 @@ The application accepts the configuration properties listed below:
     .host                                0.0.0.0                Proxy server listener host
     .port                                -                      Proxy server listener port number
     
-    .ssl                                 false                  SSL listener
+    .ssl                                 false                  SSL listener if set to true
     
-    .jksKeystore                         N/A                    (SSL) Path to Java keystore
-    .jksPassword                         N/A                    (SSL) Java keystore password
+    .jksKeystore                         -                      Path to Java keystore (SSL only)
+    .jksPassword                         -                      Java keystore password (SSL only)
 
-    .pemCertPath                         default cert           (SSL) Path to PEM formatted certificate
-    .pemKeyPath                          default key            (SSL) Path to PEM formatted key
+    .pemCertPath                         default cert           Path to PEM formatted certificate (SSL only)
+    .pemKeyPath                          default key            Path to PEM formatted key (SSL only)
 
-    .pfxKeystore                         N/A                    (SSL) Path to PFX keystore
-    .pfxPassword                         N/A                    (SSL) PFX keystore password
+    .pfxKeystore                         -                      Path to PFX keystore (SSL only)
+    .pfxPassword                         -                      PFX keystore password (SSL only)
     
 
 These properties can be applied on the command line with a double dash, for example:
 
-    docker run -d pesan/service-spy --actions.limit=150
+    docker run -d pesan/service-spy --actions.limit=150 --proxy.severs.http.mappings[0].url=http://www.example.com
 
-The can also be listed in an `application.yml` file mounted into the root of the container.
-Example of config file:
+The can also be listed in an `application.yml` file mounted into the `/opt/service-spy` directory
+of the container. Example of config file:
 
     actions.limit: 200
     proxy.servers:
@@ -90,6 +90,9 @@ Mount the key and the certificate into the container and reference them with
             --proxy.servers.https.pemCertPath=/keys/cert.pem \
             --proxy.servers.https.pemKeyPath=/keys/key.pem
 
+Note that if an SSL listener is not explicitly given a key and certificate, a default key
+and self-signed certificate will be used.
+
 ## How to do development
 
 Clone and build the project:
@@ -102,3 +105,37 @@ Start it:
 
     java -jar target/service-spy-*.jar
 
+## Changelog
+
+### 1.9
+ - Add possibility to configure mappings per proxy server listener
+
+### 1.8.2
+ - Fix request path URI display
+ - Fix server description text
+ - Fix unintended initially open content dropdown
+
+### 1.8.1
+ - Add possibility to change content type
+ - Remove trust store configuration from API
+
+### 1.8
+ - Add better support for content types: image, json, xml, plain and binary
+ - Various UI improvements
+
+### 1.7.1
+ - Add listen host
+ - Add server configuration UI
+
+### 1.7
+ - Add https support
+ - Prevent double entries in case of server timeout
+
+### 1.6.1
+ - Fix bug with unstable server synchronization
+
+### 1.6
+ - Add better support for REST
+
+### 1.5
+ - Initial public release
