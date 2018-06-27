@@ -43,7 +43,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "server.port=0",
                 "proxy.servers.http.port=65080",
                 "proxy.servers.https.port=65443"
         }, classes = {Application.class, ProxyTest.TestConfiguration.class}
