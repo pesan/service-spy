@@ -34,6 +34,7 @@ import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseExceptionEntry;
+import org.github.pesan.tools.servicespy.config.ProxyServer;
 import org.github.pesan.tools.servicespy.proxy.HttpServerBindings.Binding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,18 +68,18 @@ public class ProxyService extends AbstractVerticle {
 
     private void startServer(Binding server) {
         server.getServer()
-            .requestHandler(this::handleRequest)
+            .requestHandler(serverRequest -> handleRequest(server.getMappings(), serverRequest))
             .listen(listenHandlerForServer(server));
     }
 
-    private void handleRequest(HttpServerRequest serverRequest) {
+    private void handleRequest(List<ProxyServer.Mapping> mappings, HttpServerRequest serverRequest) {
         ByteArrayOutputStream received = new ByteArrayOutputStream();
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
         RequestContext context = new RequestContext(serverRequest, getClockTime());
 
         try {
-            URL backendUrl = getBackendUrl(context);
+            URL backendUrl = getBackendUrl(mappings, context);
             HttpClientRequest clientRequest = createClientRequest(serverRequest, backendUrl)
                     .handler(responseHandler(context, sent, received, backendUrl))
                     .exceptionHandler(responseExceptionHandler(context, backendUrl, sent, received))
@@ -110,9 +111,9 @@ public class ProxyService extends AbstractVerticle {
         return port != -1 ? port : backendUrl.getDefaultPort();
     }
 
-    private URL getBackendUrl(RequestContext context) {
-        return createURL(proxyProperties.getMappings().stream()
-                .filter(ProxyProperties.Mapping::isActive)
+    private URL getBackendUrl(List<ProxyServer.Mapping> mappings, RequestContext context) {
+        return createURL(mappings.stream()
+                .filter(ProxyServer.Mapping::isActive)
                 .filter(mapping -> mapping.getPattern().matcher(context.getRequestPath()).matches())
                 .map(mapping -> mapping.getUrl() + context.getRequestPathWithQuery())
                 .findFirst()
@@ -163,7 +164,7 @@ public class ProxyService extends AbstractVerticle {
             String host = server.getHost();
             int port = server.getPort();
             if (result.succeeded()) {
-                logger.info("Proxy server '{}' listening on {}:{}", name, host, port);
+                logger.info("Proxy server '{}' listening on {}:{} with {} mapping(s)", name, host, port, server.getMappings().size());
             } else {
                 logger.error("Unable to start '{}' proxy server on {}:{}", name, host, port, result.cause());
             }

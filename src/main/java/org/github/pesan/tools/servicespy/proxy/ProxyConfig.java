@@ -41,7 +41,8 @@ public class ProxyConfig {
                             serverSetting.getKey(),
                             vertx.createHttpServer(createServerOptions(vertx, server, proxyProperties)),
                             server.getHost(),
-                            server.getPort()
+                            server.getPort(),
+                            server.getMappings()
                     );
             })
             .collect(toList()));

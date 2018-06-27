@@ -6,9 +6,12 @@ proxy:
   servers:
     http:
       port: "9000"
+      mappings:
+       - pattern: ${default.pattern:/.*}
+         url: ${default.url:http://localhost:8080}
     https:
       ssl: true
       port: "9443"
-  mappings:
-   - pattern: ${default.pattern:/.*}
-     url: ${default.url:http://localhost:8080}
+      mappings:
+       - pattern: ${default.pattern:/.*}
+         url: ${default.url:http://localhost:8080}

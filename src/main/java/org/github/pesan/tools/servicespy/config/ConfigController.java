@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import rx.Observable;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
@@ -30,15 +32,19 @@ public class ConfigController {
     public Observable<HttpStatus> put(@RequestBody ProxyProperties newConfig) {
         return get()
                 .map(config -> {
-                    boolean valid = newConfig.getMappings().stream().allMatch(mapping -> {
-                        return mapping.getUrl().startsWith("http:") || mapping.getUrl().startsWith("https:");
-                    });
+                    for (Map.Entry<String, ProxyServer> newProxyServer : newConfig.getServers().entrySet()) {
+                        ProxyServer proxyServer = config.getServers().get(newProxyServer.getKey());
+                        boolean valid = proxyServer != null &&
+                                newProxyServer.getValue().getMappings().stream()
+                                              .allMatch(mapping -> mapping.getUrl().startsWith("http:") || mapping.getUrl().startsWith("https:"));
 
-                    if (!valid) {
-                        return HttpStatus.BAD_REQUEST;
+                        if (!valid) {
+                            return HttpStatus.BAD_REQUEST;
+                        }
+
+                        proxyServer.getMappings().clear();
+                        proxyServer.getMappings().addAll(newProxyServer.getValue().getMappings());
                     }
-                    config.getMappings().clear();
-                    config.getMappings().addAll(newConfig.getMappings());
                     return HttpStatus.NO_CONTENT;
                 });
     }

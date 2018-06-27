@@ -1,6 +1,7 @@
 package org.github.pesan.tools.servicespy.proxy;
 
 import io.vertx.core.http.HttpServer;
+import org.github.pesan.tools.servicespy.config.ProxyServer;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -21,12 +22,14 @@ public class HttpServerBindings {
         private final HttpServer server;
         private final String host;
         private final int port;
+        private final List<ProxyServer.Mapping> mappings;
 
-        public Binding(String name, HttpServer server, String host, int port) {
+        public Binding(String name, HttpServer server, String host, int port, List<ProxyServer.Mapping> mappings) {
             this.name = name;
             this.server = server;
             this.host = host;
             this.port = port;
+            this.mappings = mappings;
         }
 
         public String getName() {
@@ -43,6 +46,10 @@ public class HttpServerBindings {
 
         public int getPort() {
             return port;
+        }
+
+        public List<ProxyServer.Mapping> getMappings() {
+            return mappings;
         }
     }
 

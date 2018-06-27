@@ -32,11 +32,14 @@ The application accepts the configuration properties listed below:
     default.url                          http://localhost:8080  Default URL value
     default.pattern                      /.*                    Default pattern value
 
-    proxy.mappings[0].url                ${default.url}         The first proxied URL (shown under Config)
-    proxy.mappings[0].pattern            ${default.pattern}     The first regexp path pattern
-
     proxy.servers.http.port              9000                   HTTP proxy port number
     proxy.servers.https.port             9443                   HTTPS proxy port number
+    
+    proxy.servers.http.mappings.url      ${default.url}         HTTPS proxy port number
+    proxy.servers.http.mappings.pattern  ${default.pattern}     HTTPS proxy port number
+    
+    proxy.servers.https.mappings.url     ${default.url}         HTTPS proxy port number
+    proxy.servers.https.mappings.pattern ${dedault.pattern}     HTTPS proxy port number
 
     proxy.servers.https.jksKeystore      N/A                    Path to Java keystore
     proxy.servers.https.jksPassword      N/A                    Java keystore password
@@ -46,6 +49,13 @@ The application accepts the configuration properties listed below:
 
     proxy.servers.https.pfxKeystore      N/A                    Path to PFX keystore
     proxy.servers.https.pfxPassword      N/A                    PFX keystore password
+    
+    --------------------------------------------------------------------------------------------
+    Deprecated properties
+    --------------------------------------------------------------------------------------------
+    proxy.mappings.url                   ${default.url}         DEPRECATED: replace with proxy.server.<server-name>.mappings.url
+    proxy.mappings.pattern               ${default.pattern}     DEPRECATED: replace with proxy.server.<server-name>.mappings.pattern
+
 
 These properties can be applied on the command line with a double dash, for example:
 
@@ -55,11 +65,14 @@ The can also be listed in an `application.yml` file mounted into the root of the
 Example of config file:
 
     actions.limit: 200
-    proxy.mappings:
-      - url: http://test1.example.com
-        pattern: /test1/.*
-      - url: http://test2.example.com
-        pattern: /test2/.*
+    proxy.servers:
+      http8080:
+        port: 8080
+        mappings:
+        - url: http://test1.example.com
+          pattern: /test1/.*
+        - url: http://test2.example.com
+          pattern: /test2/.*
 
 **Example.** How to configure TLS certificate:
 

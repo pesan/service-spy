@@ -2,6 +2,10 @@ package org.github.pesan.tools.servicespy.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
 public class ProxyServer {
     private String host = "0.0.0.0";
     private int port = -1;
@@ -12,6 +16,7 @@ public class ProxyServer {
     private String pfxPassword;
     private String pemKeyPath;
     private String pemCertPath;
+    private List<Mapping> mappings = new ArrayList<>();
 
     public String getHost() { return host; }
     public void setHost(String host) { this.host = host; }
@@ -21,6 +26,8 @@ public class ProxyServer {
 
     public boolean getSsl() { return ssl; }
     public void setSsl(boolean ssl) { this.ssl = ssl; }
+
+    public List<Mapping> getMappings() { return mappings; }
 
     @JsonIgnore
     public String getJksKeystore() { return jksKeystore; }
@@ -45,4 +52,18 @@ public class ProxyServer {
     @JsonIgnore
     public String getPemCertPath() { return pemCertPath; }
     public void setPemCertPath(String pemCertPath) { this.pemCertPath = pemCertPath; }
+
+    public static class Mapping {
+        private Pattern pattern;
+        private String url;
+        private boolean active = true;
+
+        public Pattern getPattern() { return pattern; }
+        public void setPattern(String pattern) { this.pattern = Pattern.compile(pattern); }
+        public String getUrl() { return url; }
+        public void setUrl(String url) { this.url = url; }
+        public boolean isActive() { return active; }
+        public void setActive(boolean active) { this.active = active; }
+    }
+
 }

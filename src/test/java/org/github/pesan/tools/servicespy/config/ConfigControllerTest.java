@@ -1,14 +1,6 @@
 package org.github.pesan.tools.servicespy.config;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
-import org.github.pesan.tools.servicespy.proxy.ProxyProperties.Mapping;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,39 +8,40 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigControllerTest {
 
-    private final ProxyProperties proxyProperties = new ProxyProperties();
-
-    private @Mock Mapping httpMapping;
-    private @Mock Mapping httpsMapping;
-
+    private @Mock ProxyServer.Mapping httpMapping;
+    private @Mock ProxyServer.Mapping ftpMapping;
     private ConfigController configController;
 
     @Before
     public void setup() {
-        when(httpMapping.getUrl()).thenReturn("http://mapping1");
-        when(httpsMapping.getUrl()).thenReturn("https://mapping2");
-        configController = new ConfigController(proxyProperties);
+        when(httpMapping.getUrl()).thenReturn("http://mapping.url");
+        when(ftpMapping.getUrl()).thenReturn("ftp://mapping.url");
+        configController = new ConfigController(createProxyConfig());
     }
 
     @Test
     public void shouldContainNoMappingsWhenInitialized() {
-        assertThat(getProxyConfig().getMappings(), equalTo(emptyList()));
+        assertThat(getCurrentProxyConfig().getServers().get("http").getMappings(), equalTo(emptyList()));
     }
 
     @Test
     public void shouldStoreMappingsWhenUpdatingProxyConfiguration() {
-        ProxyProperties proxyConfig = new ProxyProperties();
-        proxyConfig.getMappings().add(httpMapping);
-        proxyConfig.getMappings().add(httpsMapping);
+        ProxyProperties proxyConfig = createProxyConfig();
+        proxyConfig.getServers().get("http").getMappings().add(httpMapping);
 
         updateProxyConfig(proxyConfig);
 
-        assertThat(getProxyConfig().getMappings(), equalTo(asList(
-            httpMapping,
-            httpsMapping
+        assertThat(getCurrentProxyConfig().getServers().get("http").getMappings(), equalTo(singletonList(
+                httpMapping
         )));
     }
 
@@ -64,8 +57,8 @@ public class ConfigControllerTest {
 
     @Test
     public void shouldReturnHttpBadRequestWhenMappingUrlIsNotHttpOrHttps() {
-        ProxyProperties proxyConfig = new ProxyProperties();
-        proxyConfig.getMappings().add(mapping("ftp://host.com"));
+        ProxyProperties proxyConfig = createProxyConfig();
+        proxyConfig.getServers().get("http").getMappings().add(ftpMapping);
 
         assertThat(
             updateProxyConfig(proxyConfig),
@@ -73,17 +66,17 @@ public class ConfigControllerTest {
         );
     }
 
-    private Mapping mapping(String url) {
-        Mapping mapping = mock(Mapping.class);
-        when(mapping.getUrl()).thenReturn(url);
-        return mapping;
-    }
-
     private HttpStatus updateProxyConfig(ProxyProperties proxyConfig) {
         return configController.put(proxyConfig).toBlocking().single();
     }
 
-    private ProxyProperties getProxyConfig() {
+    private ProxyProperties createProxyConfig() {
+        ProxyProperties proxyProperties = new ProxyProperties();
+        proxyProperties.getServers().put("http", new ProxyServer());
+        return proxyProperties;
+    }
+
+    private ProxyProperties getCurrentProxyConfig() {
         return configController.get().toBlocking().single();
     }
 }

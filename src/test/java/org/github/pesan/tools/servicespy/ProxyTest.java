@@ -54,8 +54,10 @@ public class ProxyTest {
 
     @Before
     public void init() {
-        proxyProperties.getMappings().get(0).setUrl("http://localhost:" + port);
-        proxyProperties.getMappings().get(0).setPattern("/.*");
+        proxyProperties.getServers().get("http").getMappings().get(0).setUrl("http://localhost:" + port);
+        proxyProperties.getServers().get("http").getMappings().get(0).setPattern("/.*");
+        proxyProperties.getServers().get("https").getMappings().get(0).setUrl("http://localhost:" + port);
+        proxyProperties.getServers().get("https").getMappings().get(0).setPattern("/.*");
 
         when(clock.instant())
                 .thenReturn(Instant.EPOCH)
@@ -119,7 +121,7 @@ public class ProxyTest {
 
     @Test
     public void shouldProvideRequestExceptionWhenRequestProcessingFails() throws IOException {
-        proxyProperties.getMappings().get(0).setPattern("$.");
+        proxyProperties.getServers().get("http").getMappings().get(0).setPattern("$.");
 
         try {
             rest.getForObject("http://localhost:65080/nomatch", Object.class);
@@ -145,7 +147,7 @@ public class ProxyTest {
 
     @Test
     public void shouldProvideResponseExceptionWhenProxiedCallFails() throws IOException {
-        proxyProperties.getMappings().get(0).setUrl("http://localhost:0");
+        proxyProperties.getServers().get("http").getMappings().get(0).setUrl("http://localhost:0");
 
         try {
             rest.getForObject("http://localhost:65080/invalid", Object.class);
