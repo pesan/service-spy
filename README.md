@@ -30,35 +30,36 @@ The application accepts the configuration properties listed below:
 
     default.url                          http://localhost:8080  Default URL value
     default.pattern                      /.*                    Default pattern value
-
-    proxy.servers.http.port              9000                   HTTP proxy port number
-    proxy.servers.https.port             9443                   HTTPS proxy port number
     
-    proxy.servers.http.mappings.url      ${default.url}         HTTPS proxy port number
-    proxy.servers.http.mappings.pattern  ${default.pattern}     HTTPS proxy port number
-    
-    proxy.servers.https.mappings.url     ${default.url}         HTTPS proxy port number
-    proxy.servers.https.mappings.pattern ${dedault.pattern}     HTTPS proxy port number
-
-    proxy.servers.https.jksKeystore      N/A                    Path to Java keystore
-    proxy.servers.https.jksPassword      N/A                    Java keystore password
-
-    proxy.servers.https.pemCertPath      default cert           Path to PEM formatted certificate
-    proxy.servers.https.pemKeyPath       default key            Path to PEM formatted key
-
-    proxy.servers.https.pfxKeystore      N/A                    Path to PFX keystore
-    proxy.servers.https.pfxPassword      N/A                    PFX keystore password
-    
-    --------------------------------------------------------------------------------------------
-    Deprecated properties
-    --------------------------------------------------------------------------------------------
     proxy.mappings.url                   ${default.url}         DEPRECATED: replace with proxy.server.<server-name>.mappings.url
     proxy.mappings.pattern               ${default.pattern}     DEPRECATED: replace with proxy.server.<server-name>.mappings.pattern
+    
+    proxy.servers.<server-name>          -                      Server definition, see below
+    
+    
+    Server definition property           Default                Comment
+    --------------------------------------------------------------------------------------------
+    .mappings[].url                      -                      Proxy target URL
+    .mappings[].pattern                  -                      Proxy path match regexp pattern
+    
+    .host                                0.0.0.0                Proxy server listener host
+    .port                                -                      Proxy server listener port number
+    
+    .ssl                                 false                  SSL listener
+    
+    .jksKeystore                         N/A                    (SSL) Path to Java keystore
+    .jksPassword                         N/A                    (SSL) Java keystore password
 
+    .pemCertPath                         default cert           (SSL) Path to PEM formatted certificate
+    .pemKeyPath                          default key            (SSL) Path to PEM formatted key
+
+    .pfxKeystore                         N/A                    (SSL) Path to PFX keystore
+    .pfxPassword                         N/A                    (SSL) PFX keystore password
+    
 
 These properties can be applied on the command line with a double dash, for example:
 
-    docker run -d pesan/service-spy --actions.limit=150 --default.url=https://example.com
+    docker run -d pesan/service-spy --actions.limit=150
 
 The can also be listed in an `application.yml` file mounted into the root of the container.
 Example of config file:
