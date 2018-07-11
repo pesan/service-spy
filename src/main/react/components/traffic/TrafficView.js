@@ -79,17 +79,21 @@ class TrafficView extends Component {
     this.retryTimerId && clearTimeout(this.retryTimerId)
   }
 
+  parseUTCDateTimeString(text) {
+    return DateTime.fromISO(text, { zone: 'UTC' }).setZone("local")
+  }
+
   parseAction(action) {
     return {
       ...action,
       request: {
         ...action.request,
-        time: DateTime.fromISO(action.request.time),
+        time: this.parseUTCDateTimeString(action.request.time),
         data: action.request.data && atob(action.request.data)
       },
       response: {
         ...action.response,
-        time: DateTime.fromISO(action.response.time),
+        time: this.parseUTCDateTimeString(action.response.time),
         data: action.response.data && atob(action.response.data)
       }
     }
@@ -149,7 +153,7 @@ class TrafficView extends Component {
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
               <Grid container spacing={16}>
                 <Grid item xs={3}>
-                  <Typography>
+                  <Typography title={action.request.time.zoneName}>
                     {action.request.time.toFormat("yyyy-MM-dd HH:mm:ss.SSS")}
                   </Typography>
                 </Grid>
