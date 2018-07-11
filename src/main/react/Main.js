@@ -5,8 +5,8 @@ import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
 import Settings from '@material-ui/icons/Settings'
 import Grid from '@material-ui/core/Grid'
-import LogsView from "components/LogsView";
-import ConfigurationView from "components/ConfigurationView";
+import TrafficView from "components/traffic/TrafficView";
+import ConfigurationView from "components/configuration/ConfigurationView";
 import Typography from "@material-ui/core/Typography";
 import Snackbar from "@material-ui/core/Snackbar";
 import InfoIcon from '@material-ui/icons/Info';
@@ -50,7 +50,7 @@ class Main extends Component {
             </Grid>
           </Toolbar>
         </AppBar>
-        <Route exact path="/" render={() => <LogsView onSnack={this.onSnack}/>}/>
+        <Route exact path="/" render={() => <TrafficView onSnack={this.onSnack}/>}/>
         <Route exact path="/config" render={() => <ConfigurationView onSnack={this.onSnack}/>}/>
       </div>
     );

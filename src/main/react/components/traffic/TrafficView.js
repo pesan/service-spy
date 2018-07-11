@@ -16,10 +16,10 @@ import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Grid from "@material-ui/core/Grid";
 import EntityDataPanel from './EntityDataPanel';
-import IconLabel from "./IconLabel";
+import IconLabel from "../IconLabel";
 import {DateTime} from "luxon"
 
-class LogsView extends Component {
+class TrafficView extends Component {
   state = {
     message: undefined,
     filter: '',
@@ -187,4 +187,4 @@ class LogsView extends Component {
   }
 }
 
-export default LogsView;
+export default TrafficView;

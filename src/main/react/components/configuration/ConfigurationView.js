@@ -1,13 +1,13 @@
 import React, {Component} from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ServerConfiguration from 'components/ServerConfiguration';
+import ServerConfiguration from 'components/configuration/ServerConfiguration';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import SaveIcon from '@material-ui/icons/Save';
 import RestoreIcon from '@material-ui/icons/Restore';
 import Grid from "@material-ui/core/Grid";
-import IconLabel from "./IconLabel";
+import IconLabel from "../IconLabel";
 
 class ConfigurationView extends Component {
   state = {
