@@ -116,7 +116,7 @@ class EntityDataPanel extends Component {
   render() {
     const {id, kind, href, item} = this.props
     const dataRenderer = this.renderers.find(renderer => renderer.name === this.state.renderer)
-    return (<Grid item xs={6}>
+    return (<Grid style={{overflow: 'auto'}} item xs={6}>
       <Tabs value={this.state.tabIndex}>
         <Tab label={kind + ' Data'} onClick={() => this.setState({tabIndex: 0})}/>
         <Tab label={kind + ' Headers (' + Object.keys(item.headers || {}).length + ')'}
