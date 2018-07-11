@@ -17,7 +17,7 @@ public class RequestDataEntry implements RequestEntry {
     private final String contentType;
     private final Map<String, List<String>> headers;
     private final LocalDateTime time;
-    private final Exception exception;
+    private final ExceptionDetails exception;
 
     private final ByteArrayOutputStream data;
 
@@ -26,10 +26,10 @@ public class RequestDataEntry implements RequestEntry {
     }
 
     public static RequestDataEntry fromContext(RequestContext context, Exception exception) {
-        return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), new ByteArrayOutputStream(), context.getStartTime(), exception);
+        return new RequestDataEntry(context.getRequestUri(), context.getRequestMethod(), context.getRequestHeaders(), new ByteArrayOutputStream(), context.getStartTime(), ExceptionDetails.fromThrowable(exception));
     }
 
-    public RequestDataEntry(URI requestUri, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time, Exception exception) {
+    public RequestDataEntry(URI requestUri, String httpMethod, Map<String, List<String>> headers, ByteArrayOutputStream data, LocalDateTime time, ExceptionDetails exception) {
         this.requestPath = requestUri.getPath();
         this.query = requestUri.getQuery() != null ? "?" + requestUri.getQuery() : "";
         this.httpMethod = httpMethod;
@@ -73,7 +73,7 @@ public class RequestDataEntry implements RequestEntry {
         return contentType;
     }
 
-    public Exception getException() {
+    public ExceptionDetails getException() {
         return exception;
     }
 }

@@ -8,6 +8,7 @@ import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,14 +37,16 @@ public class ActionController {
         return actionService.clear();
     }
 
-    @RequestMapping(method=GET, produces="application/json")
+    @RequestMapping(method=GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Single<List<LogEntry>> list() {
         return actionService.list().toList();
     }
 
-    @RequestMapping(method=GET, produces="text/event-stream")
-    public Observable<LogEntry> streamList() {
-        return actionService.streamList();
+    @RequestMapping(method=GET, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<Observable<LogEntry>> streamList() {
+        return ResponseEntity.ok()
+                             .header(HttpHeaders.CACHE_CONTROL, "no-transform") // To work with node proxy
+                             .body(actionService.streamList());
     }
 
     @RequestMapping(value="/{id}/data/request/", method=GET)

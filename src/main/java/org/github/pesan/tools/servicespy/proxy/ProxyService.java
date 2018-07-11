@@ -38,6 +38,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.github.pesan.tools.servicespy.action.entry.ExceptionDetails.fromThrowable;
 
 @Component
 public class ProxyService extends AbstractVerticle {
@@ -126,7 +127,7 @@ public class ProxyService extends AbstractVerticle {
         return throwable -> {
             actionService.log(
                     RequestDataEntry.fromContext(context, sent),
-                    new ResponseExceptionEntry(backendUrl, throwable, getClockTime())
+                    new ResponseExceptionEntry(backendUrl, fromThrowable(throwable), getClockTime())
             );
             context.getResponse().close();
          };
@@ -144,7 +145,7 @@ public class ProxyService extends AbstractVerticle {
             }).exceptionHandler(throwable -> {
                 actionService.log(
                         RequestDataEntry.fromContext(context, sent),
-                        new ResponseExceptionEntry(backendUrl, throwable, getClockTime()));
+                        new ResponseExceptionEntry(backendUrl, fromThrowable(throwable), getClockTime()));
                 serverResponse.close();
             }).endHandler(v -> {
                 actionService.log(

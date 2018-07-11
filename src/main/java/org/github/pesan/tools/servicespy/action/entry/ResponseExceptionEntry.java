@@ -5,17 +5,17 @@ import java.time.LocalDateTime;
 
 public class ResponseExceptionEntry implements ResponseEntry {
     private final URL url;
-    private final Throwable throwable;
+    private final ExceptionDetails exception;
     private final LocalDateTime time;
 
-    public ResponseExceptionEntry(URL url, Throwable throwable, LocalDateTime time) {
+    public ResponseExceptionEntry(URL url, ExceptionDetails exception, LocalDateTime time) {
         this.url = url;
-        this.throwable = throwable;
+        this.exception = exception;
         this.time = time;
     }
 
-    public Throwable getException() {
-        return throwable;
+    public ExceptionDetails getException() {
+        return exception;
     }
 
     @Override

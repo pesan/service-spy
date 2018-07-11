@@ -143,6 +143,7 @@ public class ProxyTest {
             .body("[0].request.httpMethod", equalTo("GET"))
             .body("[0].request.data", equalTo(""))
             .body("[0].request.time", equalTo("1970-01-01T00:00:00"))
+            .body("[0].request.exception.name", notNullValue())
             .body("[0].request.exception.message", notNullValue())
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
             .statusCode(200);
@@ -173,6 +174,7 @@ public class ProxyTest {
             .body("[0].response.port", equalTo(0))
             .body("[0].response.hostName", equalTo("localhost"))
             .body("[0].response.time", equalTo("1970-01-01T00:00:00.074"))
+            .body("[0].response.exception.name", notNullValue())
             .body("[0].response.exception.message", notNullValue())
             .statusCode(200);
     }
