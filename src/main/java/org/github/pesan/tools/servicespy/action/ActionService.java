@@ -19,7 +19,6 @@ public class ActionService {
     private final int maxEntryCount;
 
     private Subject<LogEntry> buffer;
-    private ReplaySubject<LogEntry> replay;
 
     public ActionService(
             RequestIdGenerator requestIdGenerator,
@@ -30,16 +29,15 @@ public class ActionService {
     }
 
     private void init() {
-        replay = ReplaySubject.createWithSize(maxEntryCount);
-        buffer = replay.toSerialized();
+        buffer = ReplaySubject.<LogEntry>createWithSize(maxEntryCount).toSerialized();
     }
 
     public Observable<LogEntry> list() {
-        return replay.take(1, TimeUnit.MILLISECONDS);
+        return buffer.take(1, TimeUnit.MILLISECONDS);
     }
 
     public Observable<LogEntry> streamList() {
-        return replay;
+        return buffer;
     }
 
     public void log(RequestEntry requestEntry, ResponseEntry responseEntry) {
