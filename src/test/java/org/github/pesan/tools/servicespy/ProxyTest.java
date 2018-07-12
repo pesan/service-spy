@@ -5,6 +5,7 @@ import org.github.pesan.tools.servicespy.action.RequestIdGenerator;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.github.pesan.tools.util.SslUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
                 "proxy.servers.https.port=31443"
         }
 )
+@Ignore
 public class ProxyTest {
 
     private @Autowired ProxyProperties proxyProperties;
