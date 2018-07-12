@@ -8,14 +8,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,24 +32,27 @@ import static com.jayway.restassured.RestAssured.port;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "proxy.servers.http.port=31080",
                 "proxy.servers.https.port=31443"
-        }, classes = {Application.class, ProxyTest.TestConfiguration.class}
+        }
 )
 public class ProxyTest {
 
     private @Autowired ProxyProperties proxyProperties;
 
-    private static final Clock clock = mock(Clock.class);
+    @MockBean
+    private Clock clock;
+
+    @MockBean
+    private RequestIdGenerator requestIdGenerator;
 
     private final RestTemplate rest = SslUtils.trustAll(new RestTemplate());
 
@@ -67,6 +68,7 @@ public class ProxyTest {
                 .thenReturn(Instant.EPOCH.plusMillis(74));
 
         when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
+        when(requestIdGenerator.next()).thenReturn("87ed7de7-d115-488a-b68a-a903ad308753");
         given().delete("/api/actions");
     }
 
@@ -196,22 +198,9 @@ public class ProxyTest {
         return Base64.getEncoder().encodeToString(text.getBytes(Charset.forName("UTF-8")));
     }
 
-    @Value("${local.server.port}")
+    @LocalServerPort
     public void setPort(int serverPort) {
         port = serverPort;
-    }
-
-    @Configuration
-    static class TestConfiguration {
-        @Primary @Bean
-        public Clock clock() {
-            return clock;
-        }
-
-        @Primary @Bean
-        public RequestIdGenerator requestIdGenerator() {
-            return () -> "87ed7de7-d115-488a-b68a-a903ad308753";
-        }
     }
 }
 
