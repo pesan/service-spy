@@ -43,8 +43,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "proxy.servers.http.port=65080",
-                "proxy.servers.https.port=65443"
+                "proxy.servers.http.port=31080",
+                "proxy.servers.https.port=31443"
         }, classes = {Application.class, ProxyTest.TestConfiguration.class}
 )
 public class ProxyTest {
@@ -83,7 +83,7 @@ public class ProxyTest {
     @Test
     public void shouldReturnDataAndContentTypeWhenFetchingResponseData() {
 
-        rest.getForObject("http://localhost:65080/test/entity", Object.class);
+        rest.getForObject("http://localhost:31080/test/entity", Object.class);
 
         given()
         .when()
@@ -96,7 +96,7 @@ public class ProxyTest {
 
     @Test
     public void shouldHaveActionDataWhenThereIsOneAction() {
-        rest.postForObject("http://localhost:65080/test/entity?withQuery&page=1", singletonMap("id", "10993"), Map.class);
+        rest.postForObject("http://localhost:31080/test/entity?withQuery&page=1", singletonMap("id", "10993"), Map.class);
 
         given()
         .when()
@@ -127,7 +127,7 @@ public class ProxyTest {
         proxyProperties.getServers().get("http").getMappings().get(0).setPattern("$.");
 
         try {
-            rest.getForObject("http://localhost:65080/nomatch", Object.class);
+            rest.getForObject("http://localhost:31080/nomatch", Object.class);
         } catch (ResourceAccessException ignored) {
             // expected
         }
@@ -154,7 +154,7 @@ public class ProxyTest {
         proxyProperties.getServers().get("http").getMappings().get(0).setUrl("http://localhost:0");
 
         try {
-            rest.getForObject("http://localhost:65080/invalid", Object.class);
+            rest.getForObject("http://localhost:31080/invalid", Object.class);
         } catch (ResourceAccessException ignored) {
             // expected
         }
@@ -182,7 +182,7 @@ public class ProxyTest {
     @Test
     public void shouldRespondWhenMakingRequestToHttpsEndpoint() {
 
-        rest.getForObject("https://localhost:65443/test/entity", Object.class);
+        rest.getForObject("https://localhost:31443/test/entity", Object.class);
 
         given()
         .when()
