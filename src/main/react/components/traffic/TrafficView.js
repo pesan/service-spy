@@ -19,6 +19,10 @@ import EntityDataPanel from './EntityDataPanel';
 import IconLabel from "../IconLabel";
 import {DateTime} from "luxon"
 
+import {delay, retryWhen, tap} from "rxjs/operators"
+
+import {fromEventSource} from "service/ObservableSources"
+
 class TrafficView extends Component {
   state = {
     message: undefined,
@@ -26,9 +30,6 @@ class TrafficView extends Component {
     actions: [],
     online: false,
   }
-
-  evtSource = undefined
-  retryTimerId = undefined
 
   actionFilter = action => {
     const filter = this.state.filter
@@ -40,47 +41,40 @@ class TrafficView extends Component {
   }
 
   componentDidMount() {
-    this.makeConnection()
-  }
+    this.setState({online: true, actions: []})
+    this.subscription = fromEventSource('/api/actions')
+      .pipe(
+        retryWhen(errors => errors // Error flow
+          .pipe(
+            tap(() => {
+                this.setState({online: false})
+                this.props.onSnack(<span style={{display: 'flex', alignItems: 'center'}}>
+                  Connection lost. Retrying...
+                </span>)
+              }
+            ),
 
-  makeConnection = () => {
-    this.retryTimerId && clearTimeout(this.retryTimerId)
+            delay(10000),
 
-    if (this.evtSource) {
-      this.evtSource.onerror = undefined
-      this.evtSource.close()
-    }
-    this.evtSource = new EventSource('/api/actions')
-
-    // Assume online until we got an 'onerror' callback
-    this.setState({online: true})
-
-    this.evtSource.onopen = () => {
-      this.setState({actions: [], online: true})
-    }
-
-    this.evtSource.onmessage = (event) => {
-      this.setState(({actions}) => ({
-        actions: [
-          ...actions,
-          this.parseAction(JSON.parse(event.data))
-        ]
-      }))
-    }
-
-    this.evtSource.onerror = () => {
-      this.setState({online: false})
-      this.retryTimerId = setTimeout(this.makeConnection, 10000)
-      this.props.onSnack(<span style={{display: 'flex', alignItems: 'center'}}>Connection not established. Retrying...</span>)
-    }
+            tap(() => this.setState({online: true}))
+          ))
+      )
+      .subscribe(event => {
+        this.setState(({actions}) => ({
+          actions: [
+            ...actions,
+            this.parseAction(JSON.parse(event.data))
+          ]
+        }))
+      })
   }
 
   componentWillUnmount() {
-    this.retryTimerId && clearTimeout(this.retryTimerId)
+    this.subscription.unsubscribe()
   }
 
   parseUTCDateTimeString(text) {
-    return DateTime.fromISO(text, { zone: 'UTC' }).setZone("local")
+    return DateTime.fromISO(text, {zone: 'UTC'}).setZone("local")
   }
 
   parseAction(action) {
@@ -111,10 +105,10 @@ class TrafficView extends Component {
         </Typography>
 
         <Grid container>
-          <Grid item xs={6}>
-            { this.state.online
-             ? <IconButton title="Online: syncing..."><SyncIcon/></IconButton>
-             : <IconButton title="Offline" onClick={this.makeConnection}><SyncProblemIcon/></IconButton>
+          <Grid item xs={6} style={{display: 'flex', alignItems: 'center'}}>
+            {this.state.online
+              ? <SyncIcon title="In sync"/>
+              : <SyncProblemIcon title="Offline"/>
             }
 
             <IconButton onClick={() => {
