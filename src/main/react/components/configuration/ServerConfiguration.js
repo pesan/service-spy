@@ -22,9 +22,16 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import TextField from "@material-ui/core/TextField";
 
-class ServerConfiguration extends Component {
+function ServerHeading({server}) {
+  return <Typography>
+    <IconLabel icon={<DeviceHubIcon/>} label={
+      <span>Server <strong>{server.name}</strong> listening on <code>{server.host}:{server.port}</code> {server.ssl && '(SSL)'}</span>
+    }/>
+  </Typography>
+}
 
-  noMappings = () => (
+function ServerConfigurationBody({server, serverMappings, onAdd, handlers}) {
+  const noMappings = () => (
     <TableRow>
       <TableCell colSpan="4" className="text-center text-muted">
         <IconLabel icon={<InfoIcon/>} label="No mappings defined."/>
@@ -32,7 +39,7 @@ class ServerConfiguration extends Component {
     </TableRow>
   )
 
-  renderMappings = (server, mapping, index, handlers) => (
+  const renderMappings = (mapping, index, handlers) => (
     <TableRow key={`${server.name}-mapping-${index}`}>
       <TableCell>
         <Switch color="primary" checked={mapping.active} onChange={handlers.onChangeActive}/>
@@ -56,39 +63,39 @@ class ServerConfiguration extends Component {
     </TableRow>
   )
 
+  return <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell>Active</TableCell>
+        <TableCell>Pattern (regexp)</TableCell>
+        <TableCell>URL</TableCell>
+        <TableCell>
+          <Button disabled={!onAdd} color="primary" title="Add mapping" onClick={onAdd}> <AddCircleOutlineIcon/> Add</Button>
+        </TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {
+        serverMappings.length
+          ? serverMappings.map((mapping, index) => renderMappings(mapping, index, handlers(index)))
+          : noMappings()
+      }
+    </TableBody>
+  </Table>
+}
+
+class ServerConfiguration extends Component {
   render() {
-    const {server, serverMappings, onAdd, handlers} = this.props
+    return <ExpansionPanel key={this.props.server.name}>
 
-    return <ExpansionPanel key={server.name}>
       <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-        <Typography>
-          <IconLabel icon={<DeviceHubIcon/>} label={
-            <span>Server <strong>{server.name}</strong> listening on <code>{server.host}:{server.port}</code> {server.ssl && '(SSL)'}</span>
-          }/>
-        </Typography>
+        <ServerHeading server={this.props.server}/>
       </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
 
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Active</TableCell>
-              <TableCell>Pattern (regexp)</TableCell>
-              <TableCell>URL</TableCell>
-              <TableCell>
-                <Button disabled={!onAdd} color="primary" title="Add mapping" onClick={onAdd}> <AddCircleOutlineIcon/> Add</Button>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {
-              serverMappings.length
-                ? serverMappings.map((mapping, index) => this.renderMappings(server, mapping, index, handlers(index)))
-                : this.noMappings()
-            }
-          </TableBody>
-        </Table>
+      <ExpansionPanelDetails>
+        <ServerConfigurationBody {...this.props}/>
       </ExpansionPanelDetails>
+
     </ExpansionPanel>
   }
 }

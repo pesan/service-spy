@@ -172,16 +172,24 @@ class TrafficView extends Component {
               </Grid>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Grid container>
+              <EntityDataPanels>
                 <EntityDataPanel key="request-data-panel" id={action.id} kind="Request" href={action.href.requestData} item={action.request}/>
                 <EntityDataPanel key="response-data-panel" id={action.id} kind="Response" href={action.href.responseData} item={action.response}/>
-              </Grid>
+              </EntityDataPanels>
             </ExpansionPanelDetails>
           </ExpansionPanel>
         ))
         }
       </div>
     );
+  }
+}
+
+class EntityDataPanels extends Component {
+  render() {
+    return <Grid container>
+      {this.props.children.map(child => <Grid item style={{overflow: 'auto'}} xs={6}>{child}</Grid>)}
+    </Grid>
   }
 }
 
