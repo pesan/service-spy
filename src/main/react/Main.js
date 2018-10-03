@@ -50,8 +50,10 @@ class Main extends Component {
             </Grid>
           </Toolbar>
         </AppBar>
-        <Route exact path="/" render={() => <TrafficView onSnack={this.onSnack}/>}/>
-        <Route exact path="/config" render={() => <ConfigurationView onSnack={this.onSnack}/>}/>
+        <div style={{marginLeft: 26, marginRight: 26, marginTop: 18}}>
+          <Route exact path="/" render={() => <TrafficView onSnack={this.onSnack}/>}/>
+          <Route exact path="/config" render={() => <ConfigurationView onSnack={this.onSnack}/>}/>
+        </div>
       </div>
     );
   }
