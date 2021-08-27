@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.3.RELEASE</version>
+        <version>2.5.4</version>
         <relativePath/>
     </parent>
 
@@ -20,13 +20,13 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build-date>${maven.build.timestamp}</build-date>
 
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
 
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <start-class>org.github.pesan.tools.servicespy.Application</start-class>
-        <rxjava.version>2.1.16</rxjava.version>
+        <rxjava.version>2.2.21</rxjava.version>
     </properties>
 
     <build>
@@ -166,12 +166,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${jackson.version}</version>
+            <version>2.12.4</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
-            <version>3.5.2</version>
+            <version>3.9.5</version>
         </dependency>
 
         <dependency>

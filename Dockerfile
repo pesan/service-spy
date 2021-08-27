@@ -1,7 +1,7 @@
 FROM maven:3.5-jdk-8-slim as backend
 WORKDIR /src
 COPY . .
-RUN mvn clean package
+RUN mvn -DskipTests clean package
 
 FROM openjdk:8-jre-alpine3.7
 EXPOSE 80 443 8080
