@@ -7,7 +7,6 @@ import io.reactivex.rxjava3.core.Single;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -17,16 +16,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
-import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.config.ConfigService;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 import static org.github.pesan.tools.servicespy.action.RxHttpAdapter.rxCompletable;
 import static org.github.pesan.tools.servicespy.action.RxHttpAdapter.rxMaybe;
@@ -34,9 +28,6 @@ import static org.github.pesan.tools.servicespy.action.RxHttpAdapter.rxServerSen
 import static org.github.pesan.tools.servicespy.action.RxHttpAdapter.rxSingle;
 
 public class DashboardVerticle extends AbstractVerticle {
-
-    private final Map<RequestId, Buffer> requestData = new ConcurrentHashMap<>();
-    private final Map<RequestId, Buffer> responseData = new ConcurrentHashMap<>();
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -84,62 +75,58 @@ public class DashboardVerticle extends AbstractVerticle {
                 ));
 
         trafficRouter.get("/").produces("text/event-stream")
-                .handler(rxServerSentEvents(request -> actionService.streamList().map(Json::fromLogEntry).map(JsonObject::encode)));
+                .handler(rxServerSentEvents(request -> actionService.subscribe().map(Json::fromLogEntry).map(JsonObject::encode)));
         trafficRouter.get("/:id/data/request/")
-                .handler(rxMaybe(request ->
-                {
+                .handler(rxMaybe(request -> {
                     RequestId requestId = RequestId.fromText(request.getParam("id"));
                     return Maybe.zip(
                             actionService.byId(requestId).map(LogEntry::getRequest),
-                            Maybe.fromCallable(() -> requestData.get(requestId)),
+                            actionService.getRequestData(requestId),
                             (entry, data) -> RxHttpAdapter.HttpResponse.ok(data)
                                     .withHeaders(entry.getContentType() != null ? Map.of("Content-Type", entry.getContentType()) : Map.of())
                     );
                 }));
         trafficRouter.get("/:id/data/response/")
-                .handler(rxMaybe(request ->
-                {
+                .handler(rxMaybe(request -> {
                     RequestId requestId = RequestId.fromText(request.getParam("id"));
                     return Maybe.zip(
                             actionService.byId(requestId).map(LogEntry::getResponse),
-                            Maybe.fromCallable(() -> responseData.get(requestId)),
+                            actionService.getResponseData(requestId),
                             (entry, data) -> RxHttpAdapter.HttpResponse.ok(data)
                                     .withHeaders(entry.getContentType() != null ? Map.of("Content-Type", entry.getContentType()) : Map.of())
                     );
                 }));
 
-        AtomicReference<RequestDataEntry> last = new AtomicReference<>();
+        vertx.eventBus().<JsonObject>consumer("request.begin", msg ->
+                actionService.onBeginRequest(
+                        RequestId.fromText(msg.body().getString("requestId")),
+                        Json.toRequestDataEntry(msg.body().getJsonObject("requestData")))
+        );
+        vertx.eventBus().<JsonObject>consumer("request.data", msg ->
+                actionService.onRequestData(
+                        RequestId.fromText(msg.body().getString("requestId")),
+                        msg.body().getBinary("payload"))
+        );
 
-        vertx.eventBus().<JsonObject>consumer("request.begin", message -> {
-            JsonObject body = message.body();
-            if (!last.compareAndSet(null, Json.toRequestDataEntry(body.getJsonObject("requestData")))) {
-                throw new RuntimeException("out of order");
-            }
-        });
-        vertx.eventBus().<JsonObject>consumer("response.begin", message -> {
-            JsonObject body = message.body();
-            RequestDataEntry requestDataEntry = last.getAndSet(null);
-            if (requestDataEntry == null) {
-                throw new NullPointerException();
-            }
-            ResponseDataEntry responseDataEntry = Json.toResponseDataEntry(body.getJsonObject("responseData"));
-            actionService.log(RequestId.fromText(body.getString("requestId")), requestDataEntry, responseDataEntry);
+        vertx.eventBus().<JsonObject>consumer("response.begin", message ->
+                actionService.onResponseBegin(
+                        RequestId.fromText(message.body().getString("requestId")),
+                        Json.toResponseDataEntry(message.body().getJsonObject("responseData")))
+        );
 
-        });
+        vertx.eventBus().<JsonObject>consumer("response.data", msg ->
+                actionService.onResponseData(
+                        RequestId.fromText(msg.body().getString("requestId")),
+                        msg.body().getBinary("payload"))
+        );
 
-        Function<Map<RequestId, Buffer>, Handler<Message<JsonObject>>> handle = storage -> msg -> {
-            RequestId requestId = RequestId.fromText(msg.body().getString("requestId"));
-            byte[] payload = msg.body().getBinary("payload");
-            storage.compute(requestId, (__, buffer) -> buffer == null
-                    ? Buffer.buffer(payload)
-                    : buffer.appendBytes(payload));
-        };
-
-        vertx.eventBus().consumer("request.data", handle.apply(requestData));
-        vertx.eventBus().consumer("response.data", handle.apply(responseData));
+        vertx.eventBus().<JsonObject>consumer("response.end", msg ->
+                actionService.onEnd(RequestId.fromText(msg.body().getString("requestId")))
+        );
 
         return Future.succeededFuture(trafficRouter);
     }
+
     private Future<Router> configurationFeature() {
         Router configRouter = Router.router(vertx);
         EventBus eventBus = vertx.eventBus();
