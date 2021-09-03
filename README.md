@@ -14,57 +14,45 @@ request and the response is logged.
 
 Start it using Docker:
 
-    docker run -d -p 8080:80 -p 8443:443 -p 8000:8080 pesan/service-spy
+    docker run -d -p 9080:80 -p 9443:443 -p 8080:8080 pesan/service-spy
 
-Visit `http://<dockerhost>:8000` for the administrative user interface. Use
-the ports 8080/8443 for accessing the proxy.
+Visit `http://<dockerhost>:8080` for the administrative user interface. Use
+the ports 0080/9443 for accessing the proxy.
 
 ### Configuration
 
 The application accepts the configuration properties listed below:
 
-    Property                             Default                Comment
-    --------------------------------------------------------------------------------------------
-    server.port                          9900                   Administrative interface port number
-    actions.limit                        200                    The number of actions to keep in memory
+#### Service configuration
 
-    default.url                          http://localhost:8080  Default URL value
-    default.pattern                      /.*                    Default pattern value
+ Property                     | Default                     | Comment
+------------------------------|-----------------------------|---------
+`server.port`                 | `9900`                      | Administrative interface port number
+`actions.limit`               | `200`                       | The number of actions to keep in memory
+`proxy.servers.<server-name>` | `http` and `https` sections | Proxy server definition, see below
     
-    proxy.mappings.url                   ${default.url}         DEPRECATED: replace with proxy.server.<server-name>.mappings.url
-    proxy.mappings.pattern               ${default.pattern}     DEPRECATED: replace with proxy.server.<server-name>.mappings.pattern
+#### Proxy server definition configuration
     
-    proxy.servers.<server-name>          -                      Server definition, see below
-    
-    
-    Server definition property           Default                Comment
-    --------------------------------------------------------------------------------------------
-    .mappings[].url                      -                      Proxy target URL
-    .mappings[].pattern                  -                      Proxy path match regexp pattern
-    
-    .host                                0.0.0.0                Proxy server listener host
-    .port                                -                      Proxy server listener port number
-    
-    .ssl                                 false                  SSL listener if set to true
-    
-    .jksKeystore                         -                      Path to Java keystore (SSL only)
-    .jksPassword                         -                      Java keystore password (SSL only)
-
-    .pemCertPath                         default cert           Path to PEM formatted certificate (SSL only)
-    .pemKeyPath                          default key            Path to PEM formatted key (SSL only)
-
-    .pfxKeystore                         -                      Path to PFX keystore (SSL only)
-    .pfxPassword                         -                      PFX keystore password (SSL only)
+ Property             | Default        | Comment
+----------------------|----------------|---------
+`.mappings[].url`     | _n/a_          | Proxy target URL
+`.mappings[].pattern` | _n/a_          | Proxy path match regexp pattern
+`.host`               | `0.0.0.0`      | Proxy server listener host
+`.port`               | _n/a_          | Proxy server listener port number
+`.ssl`                | `false`        | SSL listener if set to true
+`.jksKeystore`        | _n/a_          | Path to Java keystore (SSL only)
+`.jksPassword`        | _n/a_          | Java keystore password (SSL only)
+`.pemCertPath`        | _default cert_ | Path to PEM formatted certificate (SSL only)
+`.pemKeyPath`         | _default key_  | Path to PEM formatted key (SSL only)
+`.pfxKeystore`        | _n/a_          | Path to PFX keystore (SSL only)
+`.pfxPassword`        | _n/a_          | PFX keystore password (SSL only)
     
 
-These properties can be applied on the command line with a double dash, for example:
+The configuration can be overriden by an `application.yml` file mounted into the `/opt/service-spy` directory
+of the container.
 
-    docker run -d pesan/service-spy --actions.limit=150 --proxy.severs.http.mappings[0].url=http://www.example.com
+**Example.** Layout of a configuration file override:
 
-The can also be listed in an `application.yml` file mounted into the `/opt/service-spy` directory
-of the container. Example of config file:
-
-    actions.limit: 200
     proxy.servers:
       http8080:
         port: 8080
@@ -74,21 +62,30 @@ of the container. Example of config file:
         - url: http://test2.example.com
           pattern: /test2/.*
 
+This will add a third proxy server alongside the default ones (`http` and `https`).
+
 **Example.** How to configure TLS certificate:
 
 Generate the key and the certificate:
 
     openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 30 -nodes
 
-Mount the key and the certificate into the container and reference them with
-`pemCertPath` and `pemKeyPath`:
+Mount the key and the certificate into the container and reference them from
+the configuration override file.
+
+File *application.yml*:
+
+    proxy.servers:
+      https:
+        pemCertPath: /keys/cert.pem
+        pemKeyPath: /keys/key.pem
+
+Run command:
 
     docker run -d \
-        -p 8000:80 -p 8443:443 -p 8080:8080 \
+        -p 9080:80 -p 9443:443 -p 8080:8080 \
         -v "/path/to/local/keys/:/keys:ro" \
-        pesan/service-spy \
-            --proxy.servers.https.pemCertPath=/keys/cert.pem \
-            --proxy.servers.https.pemKeyPath=/keys/key.pem
+        pesan/service-spy
 
 Note that if an SSL listener is not explicitly given a key and certificate, a default key
 and self-signed certificate will be used.
@@ -101,9 +98,13 @@ Clone and build the project:
     cd service-spy
     mvn clean package
 
-Start it:
+Start the frontend:
 
-    java -jar target/service-spy-*.jar
+    (cd frontend; npm install; npm start)
+
+Start the backend:
+
+    java -jar target/service-spy-*-fat.jar
 
 ## Changelog
 

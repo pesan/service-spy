@@ -1,31 +1,31 @@
 package org.github.pesan.tools.servicespy.action.entry;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import org.github.pesan.tools.servicespy.action.RequestId;
 
 import java.time.ZoneOffset;
 
-@JsonSerialize(using=LogEntrySerializer.class)
 public class LogEntry {
 
-    private final String id;
-    private final RequestEntry request;
-    private final ResponseEntry response;
+    private final RequestId id;
+    private final RequestDataEntry request;
+    private final ResponseDataEntry response;
 
-    public LogEntry(String id, RequestEntry request, ResponseEntry response) {
+    public LogEntry(RequestId  id, RequestDataEntry request, ResponseDataEntry response) {
         this.id = id;
         this.request = request;
         this.response = response;
     }
 
-    public String getId() {
+    public RequestId getId() {
         return id;
     }
 
-    public RequestEntry getRequest() {
+    public RequestDataEntry getRequest() {
         return request;
     }
 
-    public ResponseEntry getResponse() {
+    public ResponseDataEntry getResponse() {
         return response;
     }
 

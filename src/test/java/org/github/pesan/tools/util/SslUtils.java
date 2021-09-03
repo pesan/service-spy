@@ -1,8 +1,5 @@
 package org.github.pesan.tools.util;
 
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -20,21 +17,6 @@ public class SslUtils {
         @Override public void checkServerTrusted(X509Certificate[] xcs, String string) {}
         @Override public X509Certificate[] getAcceptedIssuers() { return null; }
     };
-
-    public static RestTemplate trustAll(RestTemplate rest) {
-        rest.setRequestFactory(new SimpleClientHttpRequestFactory() {
-            @Override
-            protected void prepareConnection(HttpURLConnection connection,
-                    String httpMethod) throws IOException {
-                if (connection instanceof HttpsURLConnection) {
-                    ((HttpsURLConnection)connection).setHostnameVerifier((hostname, session) -> true);
-                    ((HttpsURLConnection)connection).setSSLSocketFactory(trustSelfSigned().getSocketFactory());
-                }
-                super.prepareConnection(connection, httpMethod);
-            }
-        });
-        return rest;
-    }
 
     private static SSLContext trustSelfSigned() {
         try {

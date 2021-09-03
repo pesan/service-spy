@@ -1,99 +1,68 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PfxOptions;
+import org.apache.logging.log4j.util.Strings;
 import org.github.pesan.tools.servicespy.config.ProxyServer;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 
-import static java.util.stream.Collectors.toList;
-import static org.springframework.util.FileCopyUtils.copyToByteArray;
-
-@Configuration
 public class ProxyConfig {
 
-    private final ResourceLoader resourceLoader;
+    private final Buffer defaultPemCert;
+    private final Buffer defaultPemKey;
 
-    public ProxyConfig(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
+    public ProxyConfig() {
+        this.defaultPemCert = loadResource("/tls/default-cert.pem");
+        this.defaultPemKey = loadResource("/tls/default-key.pem");
     }
 
-    @Bean
-    public Vertx vertx() {
-        return Vertx.vertx();
-    }
-
-    @Bean
-    public HttpServerBindings proxyServers(Vertx vertx, ProxyProperties proxyProperties) {
-        return new HttpServerBindings(proxyProperties.getServers().entrySet().stream()
-            .map(serverSetting -> {
-                    ProxyServer server = serverSetting.getValue();
-                    return new HttpServerBindings.Binding(
-                            serverSetting.getKey(),
-                            vertx.createHttpServer(createServerOptions(server)),
-                            server.getHost(),
-                            server.getPort(),
-                            server.getMappings()
-                    );
-            })
-            .collect(toList()));
-    }
-
-    private HttpServerOptions createServerOptions(ProxyServer value) {
+    public HttpServerOptions createServerOptions(ProxyServer value) {
         HttpServerOptions options = new HttpServerOptions()
             .setHost(value.getHost())
             .setPort(value.getPort())
             .setSsl(value.getSsl());
-        if (!StringUtils.isEmpty(value.getJksKeystore())) {
+        if (!Strings.isEmpty(value.getKeystoreConfig().getJksKeystore())) {
             options.setKeyStoreOptions(
                 new JksOptions()
-                .setPassword(value.getJksPassword())
-                .setPath(value.getJksKeystore())
+                .setPassword(value.getKeystoreConfig().getJksPassword())
+                .setPath(value.getKeystoreConfig().getJksKeystore())
             );
-        } else if (!StringUtils.isEmpty(value.getPemKeyPath())) {
+        } else if (!Strings.isEmpty(value.getKeystoreConfig().getPemKeyPath())) {
             options.setPemKeyCertOptions(
                 new PemKeyCertOptions()
-                .setCertPath(value.getPemCertPath())
-                .setKeyPath(value.getPemKeyPath())
+                .setCertPath(value.getKeystoreConfig().getPemCertPath())
+                .setKeyPath(value.getKeystoreConfig().getPemKeyPath())
             );
-        } else if (!StringUtils.isEmpty(value.getPfxKeystore())) {
+        } else if (!Strings.isEmpty(value.getKeystoreConfig().getPfxKeystore())) {
             options.setPfxKeyCertOptions(
                 new PfxOptions()
-                .setPassword(value.getPfxPassword())
-                .setPath(value.getPfxKeystore())
+                .setPassword(value.getKeystoreConfig().getPfxPassword())
+                .setPath(value.getKeystoreConfig().getPfxKeystore())
 
             );
         } else if (value.getSsl()) {
             options.setPemKeyCertOptions(
                 new PemKeyCertOptions()
-                .setCertValue(resourceToBuffer("classpath:tls/default-cert.pem"))
-                .setKeyValue(resourceToBuffer("classpath:tls/default-key.pem"))
+                .setCertValue(defaultPemCert)
+                .setKeyValue(defaultPemKey)
             );
         }
         return options;
     }
 
-    @Bean
     public HttpClientOptions httpClientOptions(ProxyProperties proxyProperties) {
         return new HttpClientOptions()
                 .setIdleTimeout(proxyProperties.getIdleTimeout() / 1000)
                 .setConnectTimeout(proxyProperties.getConnectionTimeout());
     }
 
-    @Bean
-    @Qualifier("https")
     public HttpClientOptions httpsClientOptions(ProxyProperties proxyProperties) {
         return new HttpClientOptions()
                 .setIdleTimeout(proxyProperties.getIdleTimeout() / 1000)
@@ -103,26 +72,16 @@ public class ProxyConfig {
                 .setVerifyHost(false);
     }
 
-    @Bean
-    public HttpClient httpClient(Vertx vertx, HttpClientOptions httpClientOptions) {
-        return vertx.createHttpClient(httpClientOptions);
-    }
-
-    @Bean
-    @Qualifier("https")
-    public HttpClient httpsClient(Vertx vertx, @Qualifier("https") HttpClientOptions httpsClientOptions) {
-        return vertx.createHttpClient(httpsClientOptions);
-    }
-
-    private Buffer resourceToBuffer(String path) {
+    private static Buffer loadResource(String path) {
         try {
-            Resource resource = resourceLoader.getResource(path);
-            return Buffer.buffer(
-                    copyToByteArray(resource.getInputStream())
-            );
+            InputStream resourceAsStream = ProxyConfig.class.getResourceAsStream(path);
+            if (resourceAsStream == null) {
+                throw new IOException("resource not found: " + path);
+            }
+            return Buffer.buffer(resourceAsStream.readAllBytes());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
-}
 
+}

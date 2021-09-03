@@ -69,7 +69,9 @@ class ConfigurationView extends Component {
         })).reduce((a, b) => ({...a, ...b}), {})
       })
     })
+      .then(response => { if (!response.ok) throw Error(response.statusText) })
       .then(() => this.props.onSnack('Configuration saved'))
+      .catch(err => this.props.onSnack('Failed to save configuration'))
       .then(() => this.loadConfig())
   }
 

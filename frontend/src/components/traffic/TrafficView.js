@@ -48,7 +48,7 @@ export default class TrafficView extends Component {
 
   componentDidMount() {
     this.setState({online: true, actions: []})
-    this.subscription = fromEventSource('/api/actions')
+    this.subscription = fromEventSource('/api/traffic')
       .pipe(
         retryWhen(errors => errors // Error flow
           .pipe(

@@ -1,69 +1,113 @@
 package org.github.pesan.tools.servicespy.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class ProxyServer {
-    private String host = "0.0.0.0";
-    private int port = -1;
-    private boolean ssl = false;
-    private String jksKeystore;
-    private String jksPassword;
-    private String pfxKeystore;
-    private String pfxPassword;
-    private String pemKeyPath;
-    private String pemCertPath;
-    private final List<Mapping> mappings = new ArrayList<>();
+    private final String host;
+    private final int port;
+    private final boolean ssl;
+    private final KeystoreConfig keystoreConfig;
+    private final List<Mapping> mappings;
 
-    public String getHost() { return host; }
-    public void setHost(String host) { this.host = host; }
-
-    public int getPort() { return port; }
-    public void setPort(int port) { this.port = port; }
-
-    public boolean getSsl() { return ssl; }
-    public void setSsl(boolean ssl) { this.ssl = ssl; }
-
-    public List<Mapping> getMappings() { return mappings; }
-
-    @JsonIgnore
-    public String getJksKeystore() { return jksKeystore; }
-    public void setJksKeystore(String jksKeystore) { this.jksKeystore = jksKeystore; }
-
-    @JsonIgnore
-    public String getJksPassword() { return jksPassword; }
-    public void setJksPassword(String jksPassword) { this.jksPassword = jksPassword; }
-
-    @JsonIgnore
-    public String getPfxKeystore() { return pfxKeystore; }
-    public void setPfxKeystore(String pfxKeystore) { this.pfxKeystore = pfxKeystore; }
-
-    @JsonIgnore
-    public String getPfxPassword() { return pfxPassword; }
-    public void setPfxPassword(String pfxPassword) { this.pfxPassword = pfxPassword; }
-
-    @JsonIgnore
-    public String getPemKeyPath() { return pemKeyPath; }
-    public void setPemKeyPath(String pemKeyPath) { this.pemKeyPath = pemKeyPath; }
-
-    @JsonIgnore
-    public String getPemCertPath() { return pemCertPath; }
-    public void setPemCertPath(String pemCertPath) { this.pemCertPath = pemCertPath; }
-
-    public static class Mapping {
-        private Pattern pattern;
-        private String url;
-        private boolean active = true;
-
-        public Pattern getPattern() { return pattern; }
-        public void setPattern(String pattern) { this.pattern = Pattern.compile(pattern); }
-        public String getUrl() { return url; }
-        public void setUrl(String url) { this.url = url; }
-        public boolean isActive() { return active; }
-        public void setActive(boolean active) { this.active = active; }
+    public ProxyServer(
+            String host,
+            int port,
+            boolean ssl,
+            KeystoreConfig keystoreConfig,
+            List<Mapping> mappings
+    ) {
+        this.host = host;
+        this.port = port;
+        this.ssl = ssl;
+        this.keystoreConfig = keystoreConfig;
+        this.mappings = List.copyOf(mappings);
     }
 
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public boolean getSsl() {
+        return ssl;
+    }
+
+    public List<Mapping> getMappings() {
+        return mappings;
+    }
+
+    public KeystoreConfig getKeystoreConfig() {
+        return keystoreConfig;
+    }
+
+    public static class KeystoreConfig {
+        private final String jksKeystore;
+        private final String jksPassword;
+        private final String pfxKeystore;
+        private final String pfxPassword;
+        private final String pemKeyPath;
+        private final String pemCertPath;
+
+        public KeystoreConfig(String jksKeystore, String jksPassword, String pfxKeystore, String pfxPassword, String pemKeyPath, String pemCertPath) {
+            this.jksKeystore = jksKeystore;
+            this.jksPassword = jksPassword;
+            this.pfxKeystore = pfxKeystore;
+            this.pfxPassword = pfxPassword;
+            this.pemKeyPath = pemKeyPath;
+            this.pemCertPath = pemCertPath;
+        }
+
+        public String getJksKeystore() {
+            return jksKeystore;
+        }
+
+        public String getJksPassword() {
+            return jksPassword;
+        }
+
+        public String getPfxKeystore() {
+            return pfxKeystore;
+        }
+
+        public String getPfxPassword() {
+            return pfxPassword;
+        }
+
+        public String getPemKeyPath() {
+            return pemKeyPath;
+        }
+
+        public String getPemCertPath() {
+            return pemCertPath;
+        }
+    }
+
+    public static class Mapping {
+        private final Pattern pattern;
+        private final URL url;
+        private final boolean active;
+
+        public Mapping(Pattern pattern, URL url, boolean active) {
+            this.pattern = pattern;
+            this.url = url;
+            this.active = active;
+        }
+
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        public URL getUrl() {
+            return url;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+    }
 }

@@ -1,10 +1,18 @@
-FROM maven:3.5-jdk-8-slim as backend
+FROM maven:3.8-openjdk-11-slim as backend
 WORKDIR /src
 COPY . .
-RUN mvn -DskipTests clean package
+RUN ["mvn", "-DskipTests", "clean", "package"]
 
-FROM openjdk:8-jre-alpine3.7
+FROM node:16-alpine3.11 as frontend
+COPY ./frontend /src
+WORKDIR /src
+RUN ["npm", "install"]
+RUN ["npm", "run", "build"]
+
+FROM openjdk:11.0.12-jre-slim
 EXPOSE 80 443 8080
 WORKDIR /opt/service-spy
-COPY --from=backend /src/target/service-spy*.jar service-spy.jar
-ENTRYPOINT ["java", "-jar", "service-spy.jar", "--proxy.servers.http.port=80", "--proxy.servers.https.port=443", "--server.port=8080"]
+COPY --from=backend /src/target/service-spy*-fat.jar service-spy.jar
+COPY --from=frontend /src/build /opt/webroot
+COPY ./conf/docker-application.yml application.yml
+ENTRYPOINT ["java", "-jar", "service-spy.jar"]

@@ -1,17 +1,17 @@
 ---
 server:
-  port: "9900"
+  port: 8080
 
 proxy:
   servers:
     http:
-      port: "9000"
+      port: 9080
       mappings:
-       - pattern: ${default.pattern:/.*}
-         url: ${default.url:http://localhost:8080}
+       - pattern: /.*
+         url: http://localhost:8000
     https:
       ssl: true
-      port: "9443"
+      port: 9443
       mappings:
-       - pattern: ${default.pattern:/.*}
-         url: ${default.url:http://localhost:8080}
+       - pattern: /.*
+         url: http://localhost:8000

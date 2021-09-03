@@ -1,0 +1,5 @@
+---
+server.port: 9900
+server.webroot: /opt/webroot
+proxy.servers.http.port: 80
+proxy.servers.https.port: 443
