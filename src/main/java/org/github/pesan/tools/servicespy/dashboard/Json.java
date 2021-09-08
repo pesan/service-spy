@@ -2,11 +2,11 @@ package org.github.pesan.tools.servicespy.dashboard;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails;
-import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails.StackFrame;
-import org.github.pesan.tools.servicespy.dashboard.entry.LogEntry;
-import org.github.pesan.tools.servicespy.dashboard.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.dashboard.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.ExceptionDetails;
+import org.github.pesan.tools.servicespy.dashboard.model.ExceptionDetails.StackFrame;
+import org.github.pesan.tools.servicespy.dashboard.model.LogEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.RequestDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.dashboard.config.ProxyServer;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 

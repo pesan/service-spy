@@ -14,10 +14,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.httpproxy.ProxyRequest;
 import org.github.pesan.tools.servicespy.dashboard.HttpHeaders;
 import org.github.pesan.tools.servicespy.dashboard.Json;
-import org.github.pesan.tools.servicespy.dashboard.RequestId;
-import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails;
-import org.github.pesan.tools.servicespy.dashboard.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.dashboard.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.RequestId;
+import org.github.pesan.tools.servicespy.dashboard.model.ExceptionDetails;
+import org.github.pesan.tools.servicespy.dashboard.model.RequestDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.dashboard.config.ProxyServer;
 
 import java.io.ByteArrayOutputStream;

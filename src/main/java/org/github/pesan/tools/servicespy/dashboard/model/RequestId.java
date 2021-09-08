@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.dashboard;
+package org.github.pesan.tools.servicespy.dashboard.model;
 
 import java.util.Objects;
 import java.util.UUID;

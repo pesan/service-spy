@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.dashboard;
+package org.github.pesan.tools.servicespy.dashboard.traffic;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -6,10 +6,12 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import io.vertx.core.buffer.Buffer;
-import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails;
-import org.github.pesan.tools.servicespy.dashboard.entry.LogEntry;
-import org.github.pesan.tools.servicespy.dashboard.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.dashboard.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.HttpHeaders;
+import org.github.pesan.tools.servicespy.dashboard.model.RequestId;
+import org.github.pesan.tools.servicespy.dashboard.model.ExceptionDetails;
+import org.github.pesan.tools.servicespy.dashboard.model.LogEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.RequestDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.model.ResponseDataEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
@@ -22,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class ActionService {
+class ActionService {
 
     private final Map<RequestId, LogEntry> logEntries;
 
@@ -31,36 +33,36 @@ public class ActionService {
 
     private final Subject<LogEntry> publisher = PublishSubject.<LogEntry>create().toSerialized();
 
-    public ActionService(int maxEntryCount) {
+    ActionService(int maxEntryCount) {
         this.logEntries = createFIFO(maxEntryCount, removedRequestId -> {
             requestData.remove(removedRequestId);
             responseData.remove(removedRequestId);
         });
     }
 
-    public Observable<LogEntry> list() {
+    Observable<LogEntry> list() {
         return Observable.fromIterable(logEntries.values());
     }
 
-    public Maybe<LogEntry> byId(RequestId id) {
+    Maybe<LogEntry> byId(RequestId id) {
         return list()
                 .filter(e -> e.getId().equals(id))
                 .singleElement();
     }
 
-    public Observable<LogEntry> subscribe() {
+    Observable<LogEntry> subscribe() {
         return list().concatWith(publisher);
     }
 
-    public Completable clear() {
+    Completable clear() {
         return Completable.fromAction(logEntries::clear);
     }
 
-    public void onBeginRequest(RequestId requestId, RequestDataEntry requestData) {
+    void onBeginRequest(RequestId requestId, RequestDataEntry requestData) {
         logEntries.put(requestId, new LogEntry(requestId, requestData, null));
     }
 
-    public void onResponseBegin(RequestId requestId, ResponseDataEntry responseEntry) {
+    void onResponseBegin(RequestId requestId, ResponseDataEntry responseEntry) {
         logEntries.compute(requestId, (__, logEntry) -> new LogEntry(
                 requestId,
                 logEntry != null ? logEntry.getRequest() : null,
@@ -68,15 +70,15 @@ public class ActionService {
         ));
     }
 
-    public void onRequestData(RequestId requestId, byte[] payload) {
+    void onRequestData(RequestId requestId, byte[] payload) {
         requestData.compute(requestId, (__, buffer) -> buffer == null ? Buffer.buffer(payload) : buffer.appendBytes(payload));
     }
 
-    public void onResponseData(RequestId requestId, byte[] payload) {
+    void onResponseData(RequestId requestId, byte[] payload) {
         responseData.compute(requestId, (__, buffer) -> buffer == null ? Buffer.buffer(payload) : buffer.appendBytes(payload));
     }
 
-    public void onResponseError(RequestId requestId, ExceptionDetails exceptionDetails) {
+    void onResponseError(RequestId requestId, ExceptionDetails exceptionDetails) {
         logEntries.compute(requestId, (__, logEntry) -> new LogEntry(
                 requestId,
                 logEntry != null ? logEntry.getRequest() : new RequestDataEntry(
@@ -97,27 +99,27 @@ public class ActionService {
         }
     }
 
-    public void onEnd(RequestId requestId) {
+    void onEnd(RequestId requestId) {
         if (logEntries.containsKey(requestId)) {
             publisher.onNext(logEntries.get(requestId));
         }
     }
 
-    public Maybe<Content> getRequestData(RequestId requestId) {
+    Maybe<Content> getRequestData(RequestId requestId) {
         return Maybe.fromCallable(() -> new Content(
                 Optional.ofNullable(logEntries.get(requestId)).map(e -> e.getRequest().getContentType()).orElse(null),
                 requestData.get(requestId)
         ));
     }
 
-    public Maybe<Content> getResponseData(RequestId requestId) {
+    Maybe<Content> getResponseData(RequestId requestId) {
         return Maybe.fromCallable(() -> new Content(
                 Optional.ofNullable(logEntries.get(requestId)).map(e -> e.getResponse().getContentType()).orElse(null),
                 responseData.get(requestId)
         ));
     }
 
-    public static class Content {
+    static class Content {
         private final String contentType;
         private final Buffer data;
 

@@ -1,6 +1,4 @@
-package org.github.pesan.tools.servicespy.dashboard.entry;
-
-import org.github.pesan.tools.servicespy.dashboard.RequestId;
+package org.github.pesan.tools.servicespy.dashboard.model;
 
 import java.time.ZoneOffset;
 

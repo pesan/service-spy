@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.dashboard.entry;
+package org.github.pesan.tools.servicespy.dashboard.model;
 
 import org.github.pesan.tools.servicespy.dashboard.HttpHeaders;
 

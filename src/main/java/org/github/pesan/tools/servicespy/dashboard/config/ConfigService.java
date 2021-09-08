@@ -11,20 +11,20 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
-public class ConfigService {
+class ConfigService {
 
     private static final List<String> SUPPORTED_PROTOCOLS = asList("http", "https");
     private ProxyProperties config;
 
-    public ConfigService(ProxyProperties config) {
+    ConfigService(ProxyProperties config) {
         this.config = config;
     }
 
-    public Single<ProxyProperties> get() {
+    Single<ProxyProperties> get() {
         return Single.fromSupplier(() -> config);
     }
 
-    public Single<ProxyProperties> put(ProxyProperties newConfig) {
+    Single<ProxyProperties> put(ProxyProperties newConfig) {
         return get()
                 .flatMap(config -> Single.fromSupplier(() -> {
                     Map<String, ProxyServer> newServers = newConfig.getServers();
