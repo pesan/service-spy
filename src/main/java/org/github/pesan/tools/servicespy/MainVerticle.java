@@ -35,9 +35,14 @@ public class MainVerticle extends AbstractVerticle {
                 .setOptional(true)
                 .setConfig(new JsonObject().put("path", "application.yml"));
 
+        ConfigStoreOptions providedConfig = new ConfigStoreOptions()
+                .setType("json")
+                .setConfig(config());
+
         ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions()
                 .addStore(builtInConfig)
-                .addStore(externalConfig);
+                .addStore(externalConfig)
+                .addStore(providedConfig);
 
         ConfigRetriever configRetriever = ConfigRetriever.create(vertx, configRetrieverOptions);
         configRetriever.getConfig(result -> {

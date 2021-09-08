@@ -2,6 +2,8 @@ package org.github.pesan.tools.servicespy.action;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails;
+import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails.StackFrame;
 import org.github.pesan.tools.servicespy.action.entry.LogEntry;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
@@ -60,7 +62,8 @@ public class Json {
                 .put("contentType", requestEntry.getContentType())
                 .put("query", requestEntry.getQuery())
                 .put("data", requestEntry.getData())
-                .put("time", requestEntry.getTime().format(DateTimeFormatter.ISO_DATE_TIME));
+                .put("time", requestEntry.getTime().format(DateTimeFormatter.ISO_DATE_TIME))
+                .put("exception", requestEntry.getException() != null ? fromExceptionDetails(requestEntry.getException()) : null);
     }
 
     public static ResponseDataEntry toResponseDataEntry(JsonObject json) {
@@ -84,7 +87,8 @@ public class Json {
                 .put("time", responseEntry.getTime().format(DateTimeFormatter.ISO_DATE_TIME))
                 .put("host", responseEntry.getHost())
                 .put("hostName", responseEntry.getHostName())
-                .put("port", responseEntry.getPort());
+                .put("port", responseEntry.getPort())
+                .put("exception", responseEntry.getException() != null ? fromExceptionDetails(responseEntry.getException()) : null);
     }
 
     public static ProxyProperties toProxyProperties(JsonObject json) {
@@ -187,5 +191,49 @@ public class Json {
         } catch (MalformedURLException e) {
             return Optional.empty();
         }
+    }
+
+    public static Settings toSettings(JsonObject config) {
+        return new Settings(
+                config.getInteger("port"),
+                config.getString("webroot")
+        );
+    }
+
+    public static JsonObject fromExceptionDetails(ExceptionDetails exceptionDetails) {
+        return new JsonObject()
+                .put("name", exceptionDetails.getName())
+                .put("message", exceptionDetails.getMessage())
+                .put("stackTrace", new JsonArray(exceptionDetails.getStackTrace().stream()
+                        .map(Json::fromStackFrame)
+                        .collect(toList())));
+
+    }
+
+    public static ExceptionDetails toExceptionDetails(JsonObject json) {
+        return new ExceptionDetails(
+                json.getString("name"),
+                json.getString("message"),
+                ((List<JsonObject>)json.getJsonArray("stackTrace").getList())
+                        .stream()
+                        .map(Json::toStackFrame).collect(toList())
+        );
+    }
+
+    public static JsonObject fromStackFrame(StackFrame frame) {
+        return new JsonObject()
+                .put("lineNumber", frame.getLineNumber())
+                .put("className", frame.getClassName())
+                .put("methodName", frame.getMethodName())
+                .put("fileName", frame.getFileName());
+    }
+
+    public static StackFrame toStackFrame(JsonObject json) {
+        return new StackFrame(
+                json.getInteger("lineNumber"),
+                json.getString("className"),
+                json.getString("methodName"),
+                json.getString("fileName")
+        );
     }
 }

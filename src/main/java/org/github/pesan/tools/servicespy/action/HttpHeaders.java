@@ -15,10 +15,16 @@ import static java.util.stream.Collectors.toMap;
 
 public class HttpHeaders {
 
+    private static final HttpHeaders EMPTY = new HttpHeaders(Map.of());
+
     private final Map<String, List<String>> headers;
 
     private HttpHeaders(Map<String, List<String>> headers) {
         this.headers = headers;
+    }
+
+    public static HttpHeaders empty() {
+        return EMPTY;
     }
 
     public static HttpHeaders fromUniMap(Map<String, String> headers) {

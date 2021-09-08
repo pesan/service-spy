@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.action;
+package org.github.pesan.tools.servicespy.util;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;

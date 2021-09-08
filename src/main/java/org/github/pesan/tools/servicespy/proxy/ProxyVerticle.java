@@ -15,6 +15,7 @@ import io.vertx.httpproxy.ProxyRequest;
 import org.github.pesan.tools.servicespy.action.HttpHeaders;
 import org.github.pesan.tools.servicespy.action.Json;
 import org.github.pesan.tools.servicespy.action.RequestId;
+import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails;
 import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
 import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
 import org.github.pesan.tools.servicespy.config.ProxyServer;
@@ -25,6 +26,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -59,13 +61,15 @@ public class ProxyVerticle extends AbstractVerticle {
                 .onComplete(startup);
     }
 
+    @SuppressWarnings("unchecked")
     private Future<Void> reloadServers(HttpClient httpClient, HttpClient httpsClient, ProxyProperties proxyProperties) {
         return CompositeFuture
                 .all(httpServers.stream().map(HttpServer::close).collect(toList()))
                 .compose(__ -> CompositeFuture.all(proxyProperties.getServers()
-                        .values()
+                        .entrySet()
                         .stream()
-                        .map(proxyServer -> {
+                        .map(proxyServerEntry -> {
+                            ProxyServer proxyServer = proxyServerEntry.getValue();
                             HttpServer httpServer = vertx.createHttpServer(proxyConfig.createServerOptions(proxyServer));
                             return httpServer.requestHandler(request -> {
                                         String path = request.path();
@@ -75,9 +79,23 @@ public class ProxyVerticle extends AbstractVerticle {
                                                 .ifPresentOrElse(mapping -> doProxy(mapping, request, httpClient, httpsClient),
                                                         () -> request.response().setStatusCode(502).end());
                                     })
-                                    .listen(proxyServer.getPort());
+                                    .listen(proxyServer.getPort())
+                                    .map(server -> Map.entry(proxyServerEntry.getKey(), server));
                         }).collect(toList())))
-                .onSuccess(startedServers -> httpServers = startedServers.list())
+                .onSuccess(startedServers -> {
+                    httpServers = startedServers.list().stream()
+                            .map(e -> (Map.Entry<String, HttpServer>) e)
+                            .map(Map.Entry::getValue).collect(toList());
+
+                    startedServers.list().stream()
+                            .map(serverEntry -> (Map.Entry<String, HttpServer>) serverEntry)
+                            .map(serverEntry -> new JsonObject().put(serverEntry.getKey(), serverEntry.getValue().actualPort()))
+                            .reduce(JsonObject::mergeIn)
+                            .ifPresent(portsConfig ->
+                                    vertx.eventBus().publish("proxy.started", new JsonObject()
+                                            .put("ports", portsConfig)
+                                    ));
+                })
                 .onFailure(Throwable::printStackTrace)
                 .mapEmpty();
     }
@@ -128,6 +146,8 @@ public class ProxyVerticle extends AbstractVerticle {
                 })
                 .onFailure(err -> {
                     // Release the request
+                    eventBus.publish("response.error", responseFailedEvent(requestId, err));
+
                     proxyRequest.release();
 
                     // Send error
@@ -172,7 +192,7 @@ public class ProxyVerticle extends AbstractVerticle {
         ));
         JsonObject event = new JsonObject();
         event.put("requestId", requestId.toText());
-        event.put("requestData", requestData);
+        event.put("payload", requestData);
         return event;
     }
 
@@ -187,8 +207,15 @@ public class ProxyVerticle extends AbstractVerticle {
         ));
         JsonObject event = new JsonObject();
         event.put("requestId", requestId.toText());
-        event.put("responseData", responseData);
+        event.put("payload", responseData);
         return event;
+    }
+
+    private JsonObject responseFailedEvent(RequestId requestId, Throwable exception) {
+        JsonObject responseFailed = Json.fromExceptionDetails(ExceptionDetails.fromThrowable(exception));
+        return new JsonObject()
+                .put("requestId", requestId.toText())
+                .put("payload", responseFailed);
     }
 
     private RequestId requestId() {
