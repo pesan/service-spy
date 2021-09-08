@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.action;
+package org.github.pesan.tools.servicespy.dashboard;
 
 import io.reactivex.rxjava3.annotations.Nullable;
 

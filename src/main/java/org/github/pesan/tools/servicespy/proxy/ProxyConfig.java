@@ -7,7 +7,7 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PfxOptions;
 import org.apache.logging.log4j.util.Strings;
-import org.github.pesan.tools.servicespy.config.ProxyServer;
+import org.github.pesan.tools.servicespy.dashboard.config.ProxyServer;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.action.entry;
+package org.github.pesan.tools.servicespy.dashboard.entry;
 
 import java.util.Arrays;
 import java.util.List;

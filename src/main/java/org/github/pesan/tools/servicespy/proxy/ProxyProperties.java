@@ -1,6 +1,6 @@
 package org.github.pesan.tools.servicespy.proxy;
 
-import org.github.pesan.tools.servicespy.config.ProxyServer;
+import org.github.pesan.tools.servicespy.dashboard.config.ProxyServer;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

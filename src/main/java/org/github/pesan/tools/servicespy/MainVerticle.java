@@ -10,7 +10,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Launcher;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import org.github.pesan.tools.servicespy.action.DashboardVerticle;
+import org.github.pesan.tools.servicespy.dashboard.DashboardVerticle;
 import org.github.pesan.tools.servicespy.proxy.ProxyVerticle;
 
 public class MainVerticle extends AbstractVerticle {

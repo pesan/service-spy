@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.action;
+package org.github.pesan.tools.servicespy.dashboard;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
-import org.github.pesan.tools.servicespy.config.ConfigService;
+import org.github.pesan.tools.servicespy.dashboard.config.ConfigService;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 import org.github.pesan.tools.servicespy.util.Futures;
 import org.github.pesan.tools.servicespy.util.RxHttpAdapter.HttpResponse;

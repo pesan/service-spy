@@ -1,6 +1,6 @@
-package org.github.pesan.tools.servicespy.action.entry;
+package org.github.pesan.tools.servicespy.dashboard.entry;
 
-import org.github.pesan.tools.servicespy.action.HttpHeaders;
+import org.github.pesan.tools.servicespy.dashboard.HttpHeaders;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;

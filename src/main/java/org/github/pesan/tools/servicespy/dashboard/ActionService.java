@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.action;
+package org.github.pesan.tools.servicespy.dashboard;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -6,10 +6,10 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import io.vertx.core.buffer.Buffer;
-import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails;
-import org.github.pesan.tools.servicespy.action.entry.LogEntry;
-import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails;
+import org.github.pesan.tools.servicespy.dashboard.entry.LogEntry;
+import org.github.pesan.tools.servicespy.dashboard.entry.RequestDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.entry.ResponseDataEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;

@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.config;
+package org.github.pesan.tools.servicespy.dashboard.config;
 
 import java.net.URL;
 import java.util.List;

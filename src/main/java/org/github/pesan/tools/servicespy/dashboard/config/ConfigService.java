@@ -1,4 +1,4 @@
-package org.github.pesan.tools.servicespy.config;
+package org.github.pesan.tools.servicespy.dashboard.config;
 
 import io.reactivex.rxjava3.core.Single;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;

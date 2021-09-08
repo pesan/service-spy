@@ -1,13 +1,13 @@
-package org.github.pesan.tools.servicespy.action;
+package org.github.pesan.tools.servicespy.dashboard;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails;
-import org.github.pesan.tools.servicespy.action.entry.ExceptionDetails.StackFrame;
-import org.github.pesan.tools.servicespy.action.entry.LogEntry;
-import org.github.pesan.tools.servicespy.action.entry.RequestDataEntry;
-import org.github.pesan.tools.servicespy.action.entry.ResponseDataEntry;
-import org.github.pesan.tools.servicespy.config.ProxyServer;
+import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails;
+import org.github.pesan.tools.servicespy.dashboard.entry.ExceptionDetails.StackFrame;
+import org.github.pesan.tools.servicespy.dashboard.entry.LogEntry;
+import org.github.pesan.tools.servicespy.dashboard.entry.RequestDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.entry.ResponseDataEntry;
+import org.github.pesan.tools.servicespy.dashboard.config.ProxyServer;
 import org.github.pesan.tools.servicespy.proxy.ProxyProperties;
 
 import java.io.ByteArrayOutputStream;
