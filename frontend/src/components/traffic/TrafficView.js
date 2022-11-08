@@ -39,7 +39,7 @@ export default class TrafficView extends Component {
       action.request.query,
       action.request.httpMethod,
       action.request.time,
-      action.response.status,
+      action.response.statusCode,
       action.response.time,
       action.request.data,
       action.response.data,
@@ -175,7 +175,7 @@ class EntityItem extends Component {
           <Grid item xs={1}>
             {(action.request.exception || action.response.exception)
               ? <Typography color="error">ERROR</Typography>
-              : <Typography>{action.response.status}</Typography>
+              : <Typography>{action.response.statusCode}</Typography>
             }
           </Grid>
           <Grid item xs={2}>

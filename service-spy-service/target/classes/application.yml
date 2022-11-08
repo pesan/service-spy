@@ -1,0 +1,26 @@
+---
+platform: vertx
+features:
+  dashboard:
+    feature: dashboard
+    config:
+      port: 8080
+      webroot: "target"
+
+  proxy:
+    feature: proxy
+    config:
+      # connectionTimeout: 5000
+      # idleTimeout: 5000
+      servers:
+        http:
+          port: 9080
+          mappings:
+            - pattern: /.*
+              url: http://localhost:8000
+        https:
+          ssl: true
+          port: 9443
+          mappings:
+            - pattern: /.*
+              url: http://localhost:8000

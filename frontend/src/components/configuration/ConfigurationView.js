@@ -59,13 +59,8 @@ class ConfigurationView extends Component {
         'Content-Type': 'application/json; charset=utf-8'
       },
       body: JSON.stringify({
-        servers: this.state.servers.map(server => ({
-          [server.name]: {
-            host: server.host,
-            port: server.port,
-            ssl: server.ssl,
-            mappings: this.state.mappings[server.name]
-          }
+        mappings: this.state.servers.map(server => ({
+          [server.name]: this.state.mappings[server.name]
         })).reduce((a, b) => ({...a, ...b}), {})
       })
     })

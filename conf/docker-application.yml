@@ -1,5 +1,24 @@
 ---
-server.port: 9900
-server.webroot: /opt/webroot
-proxy.servers.http.port: 80
-proxy.servers.https.port: 443
+platform: vertx
+features:
+  dashboard:
+    feature: dashboard
+    config:
+      port: 8080
+      webroot: webroot
+
+  proxy:
+    feature: proxy
+    config:
+      servers:
+        http:
+          port: 80
+          mappings:
+            - pattern: /.*
+              url: http://localhost:8000
+        https:
+          ssl: true
+          port: 443
+          mappings:
+            - pattern: /.*
+              url: http://localhost:8000

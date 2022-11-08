@@ -1,0 +1,19 @@
+---
+features:
+  - name: dashboard
+    config:
+      port: 0
+  - name: proxy
+    config:
+      servers:
+        http:
+          port: 0
+          mappings:
+            - pattern: /.*
+              url: http://localhost:$proxyPort
+        https:
+          ssl: true
+          port: 0
+          mappings:
+            - pattern: /.*
+              url: http://localhost:$proxyPort
